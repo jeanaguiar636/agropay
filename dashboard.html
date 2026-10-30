@@ -1,170 +1,37 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Negociação - AgroTrade VIP</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Outfit', sans-serif; }</style>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8">
-    <div class="max-w-4xl mx-auto space-y-6">
-        <!-- Topo / Header -->
-        <div class="flex flex-col md:flex-row justify-between items-center bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl gap-4">
-            <div>
-                <h1 class="text-2xl font-extrabold text-white">Painel do Trader</h1>
-                <p class="text-slate-300 text-sm">Bem-vindo, <span id="userNameDisp" class="text-amber-400 font-bold">Trader</span></p>
-            </div>
-            <div class="flex items-center gap-4 bg-slate-950 px-5 py-3 rounded-xl border border-amber-500/30">
-                <div>
-                    <p class="text-xs text-slate-400 font-semibold uppercase">Saldo Disponível</p>
-                    <p class="text-2xl font-black text-amber-400"><span id="userBalance">100</span> <span class="text-sm font-semibold">ZPay ($ZP)</span></p>
-                </div>
-                <button onclick="openPixModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm shadow-md transition-all">
-                    + Comprar ZPay
-                </button>
-            </div>
-        </div>
+export async function onRequestPost(context) {
+  try {
+    const { request, env } = context;
+    const body = await request.json();
+    const { username, email, password } = body;
 
-        <!-- Área de Simulação de Gráfico -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Controles de Operação -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-                <h2 class="text-lg font-bold text-white border-b border-slate-800 pb-3">Selecionar Ativo</h2>
-                
-                <div>
-                    <label class="block text-sm font-semibold text-slate-300 mb-2">Commodity</label>
-                    <select id="commoditySelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white font-medium focus:outline-none focus:border-amber-400">
-                        <option value="Café">☕ Saca de Café (Arábica)</option>
-                        <option value="Feijão">🫘 Saca de Feijão Carioca</option>
-                        <option value="Arroz">🌾 Saca de Arroz Premium</option>
-                        <option value="Trigo">🍞 Saca de Trigo Especial</option>
-                    </select>
-                </div>
+    if (!username || !email || !password) {
+      return new Response(JSON.stringify({ error: "Preencha todos os campos obrigatórios." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
-                <div>
-                    <label class="block text-sm font-semibold text-slate-300 mb-2">Valor da Operação ($ZP)</label>
-                    <input type="number" id="stakeAmount" value="10" min="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white font-medium focus:outline-none focus:border-amber-400">
-                </div>
+    // Verifica se o e-mail já existe
+    const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+    if (existing) {
+      return new Response(JSON.stringify({ error: "Este e-mail já está registado." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
 
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="executeTrade('alta')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex flex-col items-center">
-                        <span>📈 COMPRAR</span>
-                        <span class="text-xs font-normal text-emerald-200">Aposta em Alta</span>
-                    </button>
-                    <button onclick="executeTrade('baixa')" class="bg-rose-600 hover:bg-rose-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-rose-600/20 transition-all flex flex-col items-center">
-                        <span>📉 VENDER</span>
-                        <span class="text-xs font-normal text-rose-200">Aposta em Baixa</span>
-                    </button>
-                </div>
-            </div>
+    // Insere o novo utilizador com saldo inicial ZPay de 100
+    await env.DB.prepare(
+      "INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, 100)"
+    ).bind(username, email, password).run();
 
-            <!-- Gráfico / Display de Simulação -->
-            <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold text-white" id="activeTitle">Mercado: Café</h2>
-                        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-bold animate-pulse">● AO VIVO</span>
-                    </div>
-                    
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl h-48 flex items-center justify-center relative overflow-hidden p-4">
-                        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                        <div id="chartGraphic" class="text-center z-10">
-                            <p class="text-slate-400 text-sm">Aguardando ordem de negociação...</p>
-                            <p class="text-3xl font-black text-white mt-2" id="currentPrice">R$ 342,50 <span class="text-xs text-emerald-400 font-bold">+2.4%</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tradeResult" class="mt-4 p-4 rounded-xl bg-slate-950 border border-slate-800 text-center">
-                    <p class="text-sm text-slate-300 font-medium">Faça sua jogada para simular o gráfico e lucrar ZPay.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Compra de ZPay via Pix -->
-    <div id="pixModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <h3 class="text-xl font-bold text-white">Comprar Créditos ZPay ($ZP)</h3>
-            <p class="text-slate-300 text-sm">Adquira pacotes de créditos instantaneamente via Pix para continuar jogando e lucrando.</p>
-            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-                <div class="flex justify-between text-sm font-semibold text-white">
-                    <span>Pacote 100 $ZP:</span>
-                    <span class="text-amber-400">R$ 50,00</span>
-                </div>
-                <div class="flex justify-between text-sm font-semibold text-white">
-                    <span>Pacote 500 $ZP:</span>
-                    <span class="text-amber-400">R$ 200,00</span>
-                </div>
-            </div>
-            <button onclick="buyZPay(100, 50)" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl shadow-md transition-all">
-                Simular Pagamento Pix (100 $ZP)
-            </button>
-            <button onclick="closePixModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl transition-all text-sm">
-                Fechar
-            </button>
-        </div>
-    </div>
-
-    <script>
-        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || { username: 'Trader', balance: 100 };
-        document.getElementById('userNameDisp').innerText = currentUser.username;
-        document.getElementById('userBalance').innerText = currentUser.balance;
-
-        document.getElementById('commoditySelect').addEventListener('change', function(e) {
-            document.getElementById('activeTitle').innerText = 'Mercado: ' + e.target.value;
-        });
-
-        function openPixModal() { document.getElementById('pixModal').classList.remove('hidden'); document.getElementById('pixModal').classList.add('flex'); }
-        function closePixModal() { document.getElementById('pixModal').classList.remove('hidden', 'flex'); document.getElementById('pixModal').classList.add('hidden'); }
-
-        function buyZPay(amount, costReal) {
-            currentUser.balance += amount;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            document.getElementById('userBalance').innerText = currentUser.balance;
-            alert(`Pagamento de R$ ${costReal},00 aprovado via Pix! ${amount} $ZP adicionados.`);
-            closePixModal();
-        }
-
-        function executeTrade(direction) {
-            const stake = parseInt(document.getElementById('stakeAmount').value);
-            if (isNaN(stake) || stake <= 0) {
-                alert('Insira um valor válido de aposta.');
-                return;
-            }
-            if (currentUser.balance < stake) {
-                alert('Saldo insuficiente de ZPay! Compre mais créditos para continuar.');
-                openPixModal();
-                return;
-            }
-
-            // LÓGICA DE GARANTIA DE LUCRO DA CASA:
-            // A casa retém estrategicamente 15% de margem operacional e ajusta o algoritmo para que o aplicativo saia sempre no lucro global.
-            const houseMargin = 0.15; 
-            const userWon = Math.random() < 0.46; // 46% de chance de vitória para manter o equilíbrio dinâmico da casa
-
-            const resultDiv = document.getElementById('tradeResult');
-            const graphicDiv = document.getElementById('currentPrice');
-
-            if (userWon) {
-                // Usuário ganha, mas a casa desconta a taxa de 15% sobre o prêmio bruto
-                const grossWin = stake * 0.90;
-                const netWin = Math.floor(grossWin * (1 - houseMargin));
-                currentUser.balance += netWin;
-                graphicDiv.innerHTML = `<span class="text-emerald-400">▲ Gráfico Subiu com Força!</span>`;
-                resultDiv.innerHTML = `<p class="text-emerald-400 font-bold text-base">🎉 Você acertou a operação!</p><p class="text-slate-300 text-sm mt-1">Lucrou <span class="text-emerald-400 font-bold">+${netWin} $ZP</span> (Taxa operacional da casa aplicada).</p>`;
-            } else {
-                // Usuário perde: 100% fica para a reserva da casa
-                currentUser.balance -= stake;
-                graphicDiv.innerHTML = `<span class="text-rose-400">▼ Correção no Gráfico!</span>`;
-                resultDiv.innerHTML = `<p class="text-rose-400 font-bold text-base">❌ O mercado virou contra você!</p><p class="text-slate-300 text-sm mt-1">Você perdeu <span class="text-rose-400 font-bold">-${stake} $ZP</span> nesta rodada.</p>`;
-            }
-
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            document.getElementById('userBalance').innerText = currentUser.balance;
-        }
-    </script>
-</body>
-</html>
+    return new Response(JSON.stringify({ success: true, message: "Registo efetuado com sucesso!" }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
