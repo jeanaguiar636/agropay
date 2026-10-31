@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTrade Pro - Painel Definitivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0f172a] text-slate-100 min-h-screen flex flex-col">
+
+    <!-- SECÇÃO DE LOGIN (Aparece se não estiver logado) -->
+    <div id="login-screen" class="fixed inset-0 bg-[#0f172a] z-50 flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
+            <div class="text-center space-y-1">
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
+                <p class="text-xs text-slate-400">Entre com a sua conta ligada à nuvem D1</p>
+            </div>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">E-mail</label>
+                    <input type="email" id="login-email" required placeholder="ex: afiliado9591@gmail.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Palavra-passe</label>
+                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div id="login-error" class="text-xs text-rose-400 text-center hidden"></div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
+                    Entrar no Painel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PAINEL PROFISSIONAL DO TRADER (Aparece após o login) -->
+    <div id="dashboard-screen" class="hidden flex-1 flex flex-col">
+        <!-- Top Navigation -->
+        <header class="bg-[#1e293b] border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
+            <div class="flex items-center gap-2">
+                <span class="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="logout()" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900/40 border border-rose-500/30 px-3 py-1.5 rounded-xl text-sm font-semibold transition">Sair</button>
+            </div>
+        </header>
+
+        <!-- Commodities Horizontal Menu -->
+        <nav class="bg-[#162032] border-b border-slate-800 px-4 py-3 overflow-x-auto flex gap-3">
+            <button onclick="selectCommodity('Café', 450, 12.5)" class="commodity-btn bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap shadow-lg">Café</button>
+            <button onclick="selectCommodity('Trigo', 320, 8.2)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700">Trigo</button>
+            <button onclick="selectCommodity('Feijão', 210, 15.4)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700">Feijão</button>
+            <button onclick="selectCommodity('Arroz', 540, 8.1)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700">Arroz</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-4xl mx-auto w-full p-4 flex-1 space-y-4">
+            <!-- Saldo Card -->
+            <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl shadow-xl flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Saldo Disponível (Nuvem D1)</p>
+                    <h2 id="user-balance" class="text-2xl font-black text-emerald-400 mt-1">100 ZPay ($ZP)</h2>
+                    <p id="user-welcome" class="text-xs text-slate-400 mt-0.5">Carregando...</p>
+                </div>
+            </div>
+
+            <!-- Ativo Selecionado -->
+            <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Ativo em Tempo Real</span>
+                    <span id="selected-title" class="text-xl font-bold text-white">Saca de Café (Arábica)</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-slate-400 block">Cotação Atual</span>
+                    <span id="live-price" class="text-lg font-bold text-amber-400">450.00 $ZP</span>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="executaTrade('COMPRAR')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition">
+                        🟢 COMPRAR (Alta)
+                    </button>
+                    <button onclick="executaTrade('VENDER')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition">
+                        🔴 VENDER (Baixa)
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script de Gestão e Login Unificado -->
+    <script>
+        function checkLoginState() {
+            const savedUser = localStorage.getItem('agro_user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
+                    document.getElementById('user-welcome').innerText = "Bem-vindo, " + user.username + " (" + user.email + ")";
+                    document.getElementById('user-balance').innerText = (user.balance !== undefined ? user.balance : 100) + " ZPay ($ZP)";
+                } catch(e) {
+                    localStorage.removeItem('agro_user');
+                }
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-pass').value.trim();
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    localStorage.setItem('agro_user', JSON.stringify(data.user));
+                    checkLoginState();
+                } else {
+                    errorDiv.innerText = data.error || 'E-mail ou palavra-passe incorretos.';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.innerText = 'Erro de ligação ao servidor.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('agro_user');
+            location.reload();
+        }
+
+        let currentCommodity = "Café";
+        function selectCommodity(name, price, trend) {
+            currentCommodity = name;
+            document.getElementById('selected-title').innerText = "Saca de " + name;
+            document.getElementById('live-price').innerText = price.toFixed(2) + " $ZP";
+        }
+
+        function executaTrade(type) {
+            alert("Operação de " + type + " registada com sucesso em " + currentCommodity + "!");
+        }
+
+        window.addEventListener('DOMContentLoaded', checkLoginState);
+    </script>
+</body>
+</html>
