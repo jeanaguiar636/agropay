@@ -1,53 +1,78 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - AgroTrade VIP</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Outfit', sans-serif; }</style>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="max-w-md w-full bg-slate-900 border border-amber-500/30 rounded-2xl p-8 shadow-2xl shadow-amber-500/10">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-extrabold text-white tracking-tight">Entrar no <span class="text-amber-400">AgroTrade</span></h1>
-            <p class="text-slate-300 text-sm mt-2">Acesse sua carteira de ZPay e continue operando.</p>
-        </div>
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
 
-        <form id="loginForm" class="space-y-5">
-            <div>
-                <label class="block text-sm font-semibold text-white mb-1">E-mail</label>
-                <input type="email" id="loginEmail" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium" placeholder="seu@email.com">
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-white mb-1">Senha</label>
-                <input type="password" id="loginPassword" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium" placeholder="••••••••">
-            </div>
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json"
+    };
 
-            <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/20 hover:opacity-95 transition-all text-base mt-2">
-                Entrar na Plataforma
-            </button>
-        </form>
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
 
-        <p class="text-center text-sm text-slate-400 mt-6">
-            Não tem uma conta? <a href="index.html" class="text-amber-400 font-bold hover:underline">Cadastre-se</a>
-        </p>
-    </div>
+    try {
+      // Rota de Registo
+      if (path === "/api/register" && request.method === "POST") {
+        const { username, email, password } = await request.json();
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const user = JSON.parse(localStorage.getItem('currentUser'));
+        if (!username || !email || !password) {
+          return new Response(JSON.stringify({ error: "Preencha todos os campos." }), { status: 400, headers: corsHeaders });
+        }
 
-            if (user && user.email === email) {
-                window.location.href = 'dashboard.html';
-            } else {
-                alert('E-mail não encontrado. Faça o cadastro primeiro!');
-                window.location.href = 'index.html';
-            }
-        });
-    </script>
-</body>
-</html>
+        const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+        if (existing) {
+          return new Response(JSON.stringify({ error: "Este e-mail já está registado." }), { status: 400, headers: corsHeaders });
+        }
+
+        await env.DB.prepare(
+          "INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, 100)"
+        ).bind(username, email, password).run();
+
+        return new Response(JSON.stringify({ success: true, message: "Registo efetuado com sucesso!" }), { headers: corsHeaders });
+      }
+
+      // Rota de Login
+      if (path === "/api/login" && request.method === "POST") {
+        const { email, password } = await request.json();
+
+        if (!email || !password) {
+          return new Response(JSON.stringify({ error: "Preencha o e-mail e a palavra-passe." }), { status: 400, headers: corsHeaders });
+        }
+
+        const user = await env.DB.prepare("SELECT * FROM users WHERE email = ? AND password = ?").bind(email, password).first();
+        
+        if (!user) {
+          return new Response(JSON.stringify({ error: "E-mail ou palavra-passe incorretos." }), { status: 401, headers: corsHeaders });
+        }
+
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: "Login efetuado com sucesso!",
+          user: { id: user.id, username: user.username, email: user.email, balance: user.balance }
+        }), { headers: corsHeaders });
+      }
+
+      // Rota de Administração
+      if (path === "/api/admin") {
+        if (request.method === "GET") {
+          const { results } = await env.DB.prepare("SELECT id, username, email, balance, avatar_url, created_at FROM users").all();
+          return new Response(JSON.stringify(results), { headers: corsHeaders });
+        }
+
+        if (request.method === "POST") {
+          const { userId, newBalance } = await request.json();
+          await env.DB.prepare("UPDATE users SET balance = ? WHERE id = ?").bind(newBalance, userId).run();
+          return new Response(JSON.stringify({ success: true, message: "Saldo atualizado com sucesso!" }), { headers: corsHeaders });
+        }
+      }
+
+      return env.ASSETS.fetch(request);
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
+    }
+  }
+};
