@@ -3,33 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroTrade Pro - A carregar...</title>
+    <title>AgroTrade Pro - Aceder à Conta</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#0f172a] text-slate-100 min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-sm w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl text-center space-y-4">
-        <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
-        <p class="text-xs text-slate-400">A preparar o seu painel de trading...</p>
-        
-        <div class="flex justify-center py-2">
-            <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+    <div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
+        <div class="text-center space-y-1">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
+            <p class="text-xs text-slate-400">Plataforma de Trading e Commodities</p>
         </div>
 
-        <div class="pt-2">
-            <a href="app.html" class="block w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg">
-                Entrar Manualmente
-            </a>
+        <!-- Formulário de Login -->
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">E-mail</label>
+                <input type="email" id="login-email" required placeholder="ex: afiliado9591@gmail.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs text-slate-400">Palavra-passe</label>
+                    <a href="#" onclick="showForgotPassword(event)" class="text-xs text-emerald-400 hover:underline">Esqueci a senha?</a>
+                </div>
+                <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div id="form-msg" class="text-xs text-center hidden"></div>
+
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
+                Entrar no Painel
+            </button>
+        </form>
+
+        <!-- Opção de Criar Conta -->
+        <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800 space-y-2">
+            <p>Ainda não tem conta?</p>
+            <button onclick="showRegisterModal()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold py-2.5 rounded-xl transition text-sm">
+                Criar Nova Conta
+            </button>
         </div>
     </div>
 
+    <!-- MODAL DE CRIAR CONTA -->
+    <div id="register-modal" class="fixed inset-0 bg-[#0f172a]/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white">Criar Nova Conta</h2>
+                <button onclick="closeRegisterModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+            </div>
+            
+            <form id="register-form" class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Nome de Utilizador</label>
+                    <input type="text" id="reg-username" required placeholder="O seu nome" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">E-mail</label>
+                    <input type="email" id="reg-email" required placeholder="ex: seu@email.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Palavra-passe</label>
+                    <input type="password" id="reg-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div id="reg-msg" class="text-xs text-center hidden"></div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm mt-2">
+                    Registar na Nuvem
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script de Gestão -->
     <script>
-        // Redireciona automaticamente para o painel app.html
+        // Se já estiver logado, vai direto para o app.html
         window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
+            if (localStorage.getItem('agro_user')) {
                 window.location.href = 'app.html';
-            }, 800);
+            }
         });
+
+        // Ação de Login
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-pass').value.trim();
+            const msg = document.getElementById('form-msg');
+            msg.className = "text-xs text-center text-slate-400";
+            msg.innerText = "A autenticar...";
+            msg.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    localStorage.setItem('agro_user', JSON.stringify(data.user));
+                    window.location.href = 'app.html';
+                } else {
+                    msg.className = "text-xs text-center text-rose-400";
+                    msg.innerText = data.error || 'E-mail ou palavra-passe incorretos.';
+                }
+            } catch (err) {
+                msg.className = "text-xs text-center text-rose-400";
+                msg.innerText = 'Erro de ligação ao servidor.';
+            }
+        });
+
+        // Gestão da Modal de Criar Conta
+        function showRegisterModal() {
+            document.getElementById('register-modal').classList.remove('hidden');
+        }
+        function closeRegisterModal() {
+            document.getElementById('register-modal').classList.add('hidden');
+        }
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-pass').value.trim();
+            const msg = document.getElementById('reg-msg');
+            msg.className = "text-xs text-center text-slate-400";
+            msg.innerText = "A registar...";
+            msg.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    msg.className = "text-xs text-center text-emerald-400";
+                    msg.innerText = "Conta criada com sucesso! Podes fazer login.";
+                    setTimeout(() => {
+                        closeRegisterModal();
+                        document.getElementById('login-email').value = email;
+                    }, 1500);
+                } else {
+                    msg.className = "text-xs text-center text-rose-400";
+                    msg.innerText = data.error || 'Erro ao criar conta.';
+                }
+            } catch (err) {
+                msg.className = "text-xs text-center text-rose-400";
+                msg.innerText = 'Erro de ligação ao servidor.';
+            }
+        });
+
+        // Esqueci a senha
+        function showForgotPassword(e) {
+            e.preventDefault();
+            const email = prompt("Introduza o seu e-mail registado para recuperar a palavra-passe:");
+            if (email) {
+                alert("Foi enviado um link de recuperação para: " + email + "\n(Funcionalidade ligada ao suporte técnico).");
+            }
+        }
     </script>
 </body>
 </html>
