@@ -15,7 +15,7 @@ export default {
     }
 
     try {
-      // Garantir que a tabela existe com restrição UNIQUE no e-mail
+      // Garante que a tabela existe na base de dados D1
       await env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,23 +23,20 @@ export default {
           email TEXT UNIQUE,
           password TEXT,
           balance INTEGER DEFAULT 100,
-          avatar_url TEXT,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `).run();
 
-      // Rota de Registo (Bloqueia e-mails repetidos)
+      // Rota de Registo
       if (path === "/api/register" && request.method === "POST") {
         const { username, email, password } = await request.json();
-
         if (!username || !email || !password) {
           return new Response(JSON.stringify({ error: "Preencha todos os campos." }), { status: 400, headers: corsHeaders });
         }
 
-        // Verifica se já existe
         const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
         if (existing) {
-          return new Response(JSON.stringify({ error: "Este e-mail já está registado no sistema!" }), { status: 400, headers: corsHeaders });
+          return new Response(JSON.stringify({ error: "Este e-mail já está registado." }), { status: 400, headers: corsHeaders });
         }
 
         await env.DB.prepare(
@@ -52,11 +49,6 @@ export default {
       // Rota de Login
       if (path === "/api/login" && request.method === "POST") {
         const { email, password } = await request.json();
-
-        if (!email || !password) {
-          return new Response(JSON.stringify({ error: "Preencha o e-mail e a palavra-passe." }), { status: 400, headers: corsHeaders });
-        }
-
         const user = await env.DB.prepare("SELECT * FROM users WHERE email = ? AND password = ?").bind(email, password).first();
         
         if (!user) {
@@ -65,25 +57,24 @@ export default {
 
         return new Response(JSON.stringify({ 
           success: true, 
-          message: "Login efetuado com sucesso!",
           user: { id: user.id, username: user.username, email: user.email, balance: user.balance }
         }), { headers: corsHeaders });
       }
 
-      // Rota de Administração (Lista todos os utilizadores reais e atualiza saldos)
+      // Rota de Administração (Lista e atualiza utilizadores na D1)
       if (path === "/api/admin") {
         if (request.method === "GET") {
-          const { results } = await env.DB.prepare("SELECT id, username, email, balance, avatar_url, created_at FROM users").all();
+          const { results } = await env.DB.prepare("SELECT id, username, email, balance, created_at FROM users").all();
           return new Response(JSON.stringify(results || []), { headers: corsHeaders });
         }
-
         if (request.method === "POST") {
           const { userId, newBalance } = await request.json();
           await env.DB.prepare("UPDATE users SET balance = ? WHERE id = ?").bind(newBalance, userId).run();
-          return new Response(JSON.stringify({ success: true, message: "Saldo ZPay atualizado com sucesso!" }), { headers: corsHeaders });
+          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
       }
 
+      // Serve os ficheiros estáticos HTML se não for uma rota de API
       return env.ASSETS.fetch(request);
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
