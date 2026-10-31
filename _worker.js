@@ -15,7 +15,20 @@ export default {
     }
 
     try {
-      // Rota de Registo
+      // Garantir que a tabela existe com restrição UNIQUE no e-mail
+      await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT,
+          email TEXT UNIQUE,
+          password TEXT,
+          balance INTEGER DEFAULT 100,
+          avatar_url TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run();
+
+      // Rota de Registo (Bloqueia e-mails repetidos)
       if (path === "/api/register" && request.method === "POST") {
         const { username, email, password } = await request.json();
 
@@ -23,9 +36,10 @@ export default {
           return new Response(JSON.stringify({ error: "Preencha todos os campos." }), { status: 400, headers: corsHeaders });
         }
 
+        // Verifica se já existe
         const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
         if (existing) {
-          return new Response(JSON.stringify({ error: "Este e-mail já está registado." }), { status: 400, headers: corsHeaders });
+          return new Response(JSON.stringify({ error: "Este e-mail já está registado no sistema!" }), { status: 400, headers: corsHeaders });
         }
 
         await env.DB.prepare(
@@ -56,17 +70,17 @@ export default {
         }), { headers: corsHeaders });
       }
 
-      // Rota de Administração
+      // Rota de Administração (Lista todos os utilizadores reais e atualiza saldos)
       if (path === "/api/admin") {
         if (request.method === "GET") {
           const { results } = await env.DB.prepare("SELECT id, username, email, balance, avatar_url, created_at FROM users").all();
-          return new Response(JSON.stringify(results), { headers: corsHeaders });
+          return new Response(JSON.stringify(results || []), { headers: corsHeaders });
         }
 
         if (request.method === "POST") {
           const { userId, newBalance } = await request.json();
           await env.DB.prepare("UPDATE users SET balance = ? WHERE id = ?").bind(newBalance, userId).run();
-          return new Response(JSON.stringify({ success: true, message: "Saldo atualizado com sucesso!" }), { headers: corsHeaders });
+          return new Response(JSON.stringify({ success: true, message: "Saldo ZPay atualizado com sucesso!" }), { headers: corsHeaders });
         }
       }
 
