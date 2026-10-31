@@ -15,7 +15,7 @@ export default {
     }
 
     try {
-      // Garante que a tabela existe na base de dados D1
+      // Cria a tabela na base de dados D1 na nuvem
       await env.DB.prepare(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +27,7 @@ export default {
         )
       `).run();
 
-      // Rota de Registo
+      // Registo gravado no D1
       if (path === "/api/register" && request.method === "POST") {
         const { username, email, password } = await request.json();
         if (!username || !email || !password) {
@@ -43,10 +43,10 @@ export default {
           "INSERT INTO users (username, email, password, balance) VALUES (?, ?, ?, 100)"
         ).bind(username, email, password).run();
 
-        return new Response(JSON.stringify({ success: true, message: "Registo efetuado com sucesso!" }), { headers: corsHeaders });
+        return new Response(JSON.stringify({ success: true, message: "Registo gravado na nuvem com sucesso!" }), { headers: corsHeaders });
       }
 
-      // Rota de Login
+      // Login consultado no D1
       if (path === "/api/login" && request.method === "POST") {
         const { email, password } = await request.json();
         const user = await env.DB.prepare("SELECT * FROM users WHERE email = ? AND password = ?").bind(email, password).first();
@@ -61,7 +61,7 @@ export default {
         }), { headers: corsHeaders });
       }
 
-      // Rota de Administração (Lista e atualiza utilizadores na D1)
+      // Painel Admin consultado no D1
       if (path === "/api/admin") {
         if (request.method === "GET") {
           const { results } = await env.DB.prepare("SELECT id, username, email, balance, created_at FROM users").all();
@@ -74,7 +74,6 @@ export default {
         }
       }
 
-      // Serve os ficheiros estáticos HTML se não for uma rota de API
       return env.ASSETS.fetch(request);
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
