@@ -188,7 +188,6 @@
             });
         }
 
-        // Executa trade e calcula ganho (verde) ou perda (vermelho) de imediato
         function executeTrade(type) {
             const amountInput = document.getElementById('trade-amount');
             const investVal = parseFloat(amountInput.value) || 0;
@@ -198,9 +197,7 @@
                 return;
             }
 
-            // Simula resultado aleatório de trading (60% de chance de lucro para dar emoção)
             const isWin = Math.random() > 0.4;
-            // Variação de ganho entre 15% a 85% ou perda entre 10% a 70%
             const percentage = isWin ? (Math.random() * 70 + 15) : -(Math.random() * 60 + 10);
             const resultValue = (investVal * (percentage / 100));
 
@@ -230,7 +227,6 @@
                 statusText.innerText = "Mercado oscilou contra a sua posição. Tente novamente!";
             }
 
-            // Atualiza saldo local
             if (currentUser) {
                 currentUser.balance = Math.round((currentUser.balance || 100) + resultValue);
                 localStorage.setItem('agro_user', JSON.stringify(currentUser));
