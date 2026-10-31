@@ -3,7 +3,6 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // CORS headers para permitir pedidos do frontend
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -18,11 +17,10 @@ export default {
     try {
       // Rota de Registo
       if (path === "/api/register" && request.method === "POST") {
-        const body = await request.json();
-        const { username, email, password } = body;
+        const { username, email, password } = await request.json();
 
         if (!username || !email || !password) {
-          return new Response(JSON.stringify({ error: "Preencha todos os campos obrigatórios." }), { status: 400, headers: corsHeaders });
+          return new Response(JSON.stringify({ error: "Preencha todos os campos." }), { status: 400, headers: corsHeaders });
         }
 
         const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
@@ -37,7 +35,28 @@ export default {
         return new Response(JSON.stringify({ success: true, message: "Registo efetuado com sucesso!" }), { headers: corsHeaders });
       }
 
-      // Rota de Administração (Listar e Atualizar Saldos ZPay)
+      // Rota de Login
+      if (path === "/api/login" && request.method === "POST") {
+        const { email, password } = await request.json();
+
+        if (!email || !password) {
+          return new Response(JSON.stringify({ error: "Preencha o e-mail e a palavra-passe." }), { status: 400, headers: corsHeaders });
+        }
+
+        const user = await env.DB.prepare("SELECT * FROM users WHERE email = ? AND password = ?").bind(email, password).first();
+        
+        if (!user) {
+          return new Response(JSON.stringify({ error: "E-mail ou palavra-passe incorretos." }), { status: 401, headers: corsHeaders });
+        }
+
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: "Login efetuado com sucesso!",
+          user: { id: user.id, username: user.username, email: user.email, balance: user.balance }
+        }), { headers: corsHeaders });
+      }
+
+      // Rota de Administração
       if (path === "/api/admin") {
         if (request.method === "GET") {
           const { results } = await env.DB.prepare("SELECT id, username, email, balance, avatar_url, created_at FROM users").all();
@@ -47,11 +66,10 @@ export default {
         if (request.method === "POST") {
           const { userId, newBalance } = await request.json();
           await env.DB.prepare("UPDATE users SET balance = ? WHERE id = ?").bind(newBalance, userId).run();
-          return new Response(JSON.stringify({ success: true, message: "Saldo ZPay atualizado com sucesso!" }), { headers: corsHeaders });
+          return new Response(JSON.stringify({ success: true, message: "Saldo atualizado com sucesso!" }), { headers: corsHeaders });
         }
       }
 
-      // Se não for rota de API, deixa o Cloudflare servir os ficheiros estáticos (HTML)
       return env.ASSETS.fetch(request);
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
