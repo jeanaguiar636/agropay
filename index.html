@@ -1,359 +1,70 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroTrade Pro - Aceder à Conta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroTrade Pro - Aceder à Conta</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#0f172a] text-slate-100 min-h-screen flex items-center justify-center p-4">
-
-    <div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
-        <div class="text-center space-y-1">
-            <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
-            <p class="text-xs text-slate-400">Plataforma de Trading em Nuvem (Supabase)</p>
-        </div>
-
-        <form id="login-form" class="space-y-4">
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">E-mail</label>
-                <input type="email" id="login-email" required placeholder="ex: seu@email.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-            </div>
-
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Palavra-passe</label>
-                <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-            </div>
-
-            <div id="login-msg" class="text-xs text-center hidden"></div>
-
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
-                Entrar na Conta
-            </button>
-        </form>
-
-        <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800 space-y-2">
-            <p>Ainda não tem uma conta?</p>
-            <a href="register.html" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold py-2.5 rounded-xl transition text-center text-sm">
-                Criar Nova Conta
-            </a>
-        </div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = "https://zwjuglicfmvebzwoesvd.supabase.co";
-        const SUPABASE_ANON_KEY = "Sb_publishable_yJCyYgFteeyrEFsLgGcwcA_sH9vdtlo"; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-pass').value.trim();
-            const msg = document.getElementById('login-msg');
-
-            msg.className = "text-xs text-center text-slate-400";
-            msg.innerText = "A autenticar na nuvem...";
-            msg.classList.remove('hidden');
-
-            try {
-                const { data, error } = await supabaseClient
-                    .from('users')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('password', password)
-                    .single();
-
-                if (error || !data) {
-                    msg.className = "text-xs text-center text-rose-400";
-                    msg.innerText = "E-mail ou palavra-passe incorretos.";
-                } else {
-                    localStorage.setItem('agro_cloud_user', JSON.stringify(data));
-                    window.location.href = 'dashboard.html';
-                }
-            } catch (err) {
-                msg.className = "text-xs text-center text-rose-400";
-                msg.innerText = "Erro ao ligar ao Supabase.";
-            }
-        });
-    </script>
+​<div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
+<div class="text-center space-y-1">
+<h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
+<p class="text-xs text-slate-400">Plataforma de Trading em Nuvem (Supabase)</p>
+</div>
+​<form id="login-form" class="space-y-4">
+<div>
+<label class="block text-xs text-slate-400 mb-1">E-mail</label>
+<input type="email" id="login-email" required placeholder="ex: seu@email.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+</div>
+​<div>
+<label class="block text-xs text-slate-400 mb-1">Palavra-passe</label>
+<input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+</div>
+​<div id="login-msg" class="text-xs text-center hidden"></div>
+​<button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
+Entrar na Conta
+</button>
+</form>
+​<div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800 space-y-2">
+<p>Ainda não tem uma conta?</p>
+<a href="register.html" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold py-2.5 rounded-xl transition text-center text-sm">
+Criar Nova Conta
+</a>
+</div>
+</div>
+​<script>
+const SUPABASE_URL = "https://zwjuglicfmvebzwoesvd.supabase.co";
+const SUPABASE_ANON_KEY = "Sb_publishable_yJCyYgFteeyrEFsLgGcwcA_sH9vdtlo";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+​document.getElementById('login-form').addEventListener('submit', async (e) => {
+e.preventDefault();
+const email = document.getElementById('login-email').value.trim();
+const password = document.getElementById('login-pass').value.trim();
+const msg = document.getElementById('login-msg');
+​msg.className = "text-xs text-center text-slate-400";
+msg.innerText = "A autenticar na nuvem...";
+msg.classList.remove('hidden');
+​try {
+const { data, error } = await supabaseClient
+.from('users')
+.select('*')
+.eq('email', email)
+.eq('password', password)
+.single();
+​if (error || !data) {
+msg.className = "text-xs text-center text-rose-400";
+msg.innerText = "E-mail ou palavra-passe incorretos.";
+} else {
+localStorage.setItem('agro_cloud_user', JSON.stringify(data));
+window.location.href = 'dashboard.html';
+}
+} catch (err) {
+msg.className = "text-xs text-center text-rose-400";
+msg.innerText = "Erro ao ligar ao Supabase.";
+}
+});
+</script>
 </body>
 </html>
-```eof
-
----
-
-### 2. Ficheiro `register.html` (Página de Registo)
-```html:register.html
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroTrade Pro - Criar Conta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-[#0f172a] text-slate-100 min-h-screen flex items-center justify-center p-4">
-
-    <div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
-        <div class="text-center space-y-1">
-            <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">Criar Conta</h1>
-            <p class="text-xs text-slate-400">Registe-se na nuvem Supabase</p>
-        </div>
-
-        <form id="register-form" class="space-y-4">
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Nome de Utilizador</label>
-                <input type="text" id="username" required placeholder="O seu nome" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-            </div>
-
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">E-mail</label>
-                <input type="email" id="email" required placeholder="ex: seu@email.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-            </div>
-
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Palavra-passe</label>
-                <input type="password" id="password" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-            </div>
-
-            <div id="reg-msg" class="text-xs text-center hidden"></div>
-
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
-                Criar Conta
-            </button>
-        </form>
-
-        <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800">
-            Já tem uma conta? <a href="index.html" class="text-emerald-400 hover:underline font-semibold">Fazer Login</a>
-        </div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = "https://zwjuglicfmvebzwoesvd.supabase.co";
-        const SUPABASE_ANON_KEY = "Sb_publishable_yJCyYgFteeyrEFsLgGcwcA_sH9vdtlo";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const msg = document.getElementById('reg-msg');
-
-            msg.className = "text-xs text-center text-slate-400";
-            msg.innerText = "A guardar na base de dados...";
-            msg.classList.remove('hidden');
-
-            try {
-                const { error } = await supabaseClient
-                    .from('users')
-                    .insert([{ username, email, password, balance: 100.0 }]);
-
-                if (error) {
-                    msg.className = "text-xs text-center text-rose-400";
-                    msg.innerText = "Este e-mail já está registado ou ocorreu um erro.";
-                } else {
-                    msg.className = "text-xs text-center text-emerald-400";
-                    msg.innerText = "Conta criada com sucesso! Redirecionando...";
-                    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
-                }
-            } catch (err) {
-                msg.className = "text-xs text-center text-rose-400";
-                msg.innerText = "Erro ao registar.";
-            }
-        });
-    </script>
-</body>
-</html>
-```eof
-
----
-
-### 3. Ficheiro `dashboard.html` (Painel de Trading)
-```html:dashboard.html
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroTrade Pro - Painel do Trader</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-[#0f172a] text-slate-100 min-h-screen flex flex-col font-sans">
-
-    <header class="bg-[#1e293b] border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow-md">
-        <span class="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</span>
-        <button onclick="logout()" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900/40 border border-rose-500/30 px-3 py-1.5 rounded-xl text-sm font-semibold transition">Sair</button>
-    </header>
-
-    <nav class="bg-[#162032] border-b border-slate-800 px-4 py-3 overflow-x-auto flex gap-3">
-        <button onclick="selectCommodity('Café', 450)" class="commodity-btn bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap shadow-lg transition">Café</button>
-        <button onclick="selectCommodity('Trigo', 320)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Trigo</button>
-        <button onclick="selectCommodity('Feijão', 210)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Feijão</button>
-        <button onclick="selectCommodity('Arroz', 540)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Arroz</button>
-    </nav>
-
-    <main class="max-w-4xl mx-auto w-full p-4 flex-1 space-y-4 pb-12">
-        <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl shadow-xl flex justify-between items-center">
-            <div>
-                <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Saldo na Nuvem Supabase</p>
-                <h2 id="user-balance" class="text-2xl font-black text-emerald-400 mt-1">0.00 ZPay ($ZP)</h2>
-                <p id="user-welcome" class="text-xs text-slate-400 mt-0.5">A carregar...</p>
-            </div>
-        </div>
-
-        <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Ativo em Tempo Real</span>
-                <span id="selected-title" class="text-xl font-bold text-white">Saca de Café</span>
-            </div>
-            
-            <div class="flex justify-between items-center bg-[#0f172a] p-3 rounded-xl border border-slate-800">
-                <span class="text-xs text-slate-400">Cotação Atual:</span>
-                <span id="live-price" class="text-lg font-bold text-amber-400">450.00 $ZP</span>
-            </div>
-
-            <div>
-                <label class="block text-xs text-slate-400 mb-1">Valor da Operação ($ZP)</label>
-                <input type="number" id="trade-amount" value="50" min="1" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 pt-2">
-                <button onclick="executeTrade('COMPRAR')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
-                    COMPRAR (Alta)
-                </button>
-                <button onclick="executeTrade('VENDER')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
-                    VENDER (Baixa)
-                </button>
-            </div>
-        </div>
-
-        <div id="result-card" class="hidden bg-[#1e293b] border p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300">
-            <div class="flex justify-between items-center">
-                <span id="result-badge" class="text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider"></span>
-                <span class="text-xs text-slate-400">Ativo: <strong id="result-comm" class="text-white"></strong></span>
-            </div>
-            <div class="text-center py-3">
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Resultado da Operação</p>
-                <h3 id="result-value" class="text-3xl font-black">0.00 $ZP</h3>
-                <p id="result-desc" class="text-xs font-medium mt-1"></p>
-            </div>
-            <button onclick="closeResult()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition border border-slate-700">
-                Fechar & Nova Operação
-            </button>
-        </div>
-    </main>
-
-    <script>
-        const SUPABASE_URL = "https://zwjuglicfmvebzwoesvd.supabase.co";
-        const SUPABASE_ANON_KEY = "Sb_publishable_yJCyYgFteeyrEFsLgGcwcA_sH9vdtlo";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let currentUser = null;
-        let currentCommodity = "Café";
-        let currentPrice = 450;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const data = localStorage.getItem('agro_cloud_user');
-            if (!data) {
-                window.location.href = 'index.html';
-                return;
-            }
-            currentUser = JSON.parse(data);
-            document.getElementById('user-welcome').innerText = "Utilizador: " + currentUser.username + " (" + currentUser.email + ")";
-            document.getElementById('user-balance').innerText = (currentUser.balance !== undefined ? currentUser.balance : 100).toFixed(2) + " ZPay ($ZP)";
-        });
-
-        function logout() {
-            localStorage.removeItem('agro_cloud_user');
-            window.location.href = 'index.html';
-        }
-
-        function selectCommodity(name, price) {
-            currentCommodity = name;
-            currentPrice = price;
-            document.getElementById('selected-title').innerText = "Saca de " + name;
-            document.getElementById('live-price').innerText = price.toFixed(2) + " $ZP";
-
-            document.querySelectorAll('.commodity-btn').forEach(btn => {
-                btn.className = "commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition";
-                if(btn.innerText.includes(name)) {
-                    btn.className = "commodity-btn bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap shadow-lg transition";
-                }
-            });
-        }
-
-        async function executeTrade(type) {
-            const amountInput = document.getElementById('trade-amount');
-            const investVal = parseFloat(amountInput.value) || 0;
-
-            if (investVal <= 0) {
-                alert("Introduza um montante válido.");
-                return;
-            }
-
-            const isWin = Math.random() > 0.45;
-            const percentage = isWin ? (Math.random() * 50 + 10) : -(Math.random() * 45 + 10);
-            const profitLoss = investVal * (percentage / 100);
-
-            currentUser.balance = Math.max(0, (currentUser.balance || 100) + profitLoss);
-
-            try {
-                await supabaseClient
-                    .from('users')
-                    .update({ balance: currentUser.balance })
-                    .eq('id', currentUser.id);
-            } catch (err) {
-                console.error("Erro ao sincronizar saldo na nuvem:", err);
-            }
-
-            localStorage.setItem('agro_cloud_user', JSON.stringify(currentUser));
-            document.getElementById('user-balance').innerText = currentUser.balance.toFixed(2) + " ZPay ($ZP)";
-
-            const resultCard = document.getElementById('result-card');
-            const badge = document.getElementById('result-badge');
-            const valEl = document.getElementById('result-value');
-            const descEl = document.getElementById('result-desc');
-            const commEl = document.getElementById('result-comm');
-
-            commEl.innerText = currentCommodity + " (" + type + ")";
-
-            if (isWin) {
-                resultCard.className = "bg-emerald-950/40 border border-emerald-500/50 p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300";
-                badge.className = "text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider bg-emerald-500/20 text-emerald-400";
-                badge.innerText = "LUCRO OBTIDO";
-                valEl.className = "text-3xl font-black text-emerald-400";
-                valEl.innerText = "+" + profitLoss.toFixed(2) + " $ZP (+" + percentage.toFixed(1) + "%)";
-                descEl.className = "text-xs font-medium mt-1 text-emerald-300";
-                descEl.innerText = "Lucro guardado na nuvem com sucesso!";
-            } else {
-                resultCard.className = "bg-rose-950/40 border border-rose-500/50 p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300";
-                badge.className = "text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider bg-rose-500/20 text-rose-400";
-                badge.innerText = "PREJUÍZO REGISTADO";
-                valEl.className = "text-3xl font-black text-rose-400";
-                valEl.innerText = profitLoss.toFixed(2) + " $ZP (" + percentage.toFixed(1) + "%)";
-                descEl.className = "text-xs font-medium mt-1 text-rose-300";
-                descEl.innerText = "Prejuízo atualizado na nuvem.";
-            }
-
-            resultCard.classList.remove('hidden');
-            resultCard.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function closeResult() {
-            document.getElementById('result-card').classList.add('hidden');
-        }
-    </script>
-</body>
-</html>
-```eof
-
----
-
-### Dica final:
-Copie cada um destes blocos para os respetivos ficheiros no GitHub (`index.html`, `register.html` e `dashboard.html`). Com isto, o seu projeto fica 100% autónomo, ligado ao Supabase e pronto a funcionar sem nenhum erro de servidor ou de IDs da Cloudflare!
