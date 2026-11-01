@@ -1,69 +1,84 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgroTrade Pro - Aceder à Conta</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTrade Pro - Aceder à Conta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#0f172a] text-slate-100 min-h-screen flex items-center justify-center p-4">
-​<div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
-<div class="text-center space-y-1">
-<h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
-<p class="text-xs text-slate-400">Plataforma de Trading em Nuvem</p>
-</div>
-​<form id="login-form" class="space-y-4">
-<div>
-<label class="block text-xs text-slate-400 mb-1">E-mail</label>
-<input type="email" id="login-email" required placeholder="ex: seu@email.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-</div>
-​<div>
-<div class="flex justify-between items-center mb-1">
-<label class="text-xs text-slate-400">Palavra-passe</label>
-<a href="#" onclick="alert('Recuperação enviada para o seu e-mail.'); return false;" class="text-xs text-emerald-400 hover:underline">Esqueci a senha?</a>
-</div>
-<input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-</div>
-​<div id="login-msg" class="text-xs text-center hidden"></div>
-​<button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
-Entrar na Conta
-</button>
-</form>
-​<div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800 space-y-2">
-<p>Ainda não tem uma conta?</p>
-<a href="register.html" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold py-2.5 rounded-xl transition text-center text-sm">
-Criar Nova Conta
-</a>
-</div>
-</div>
-​<script>
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-e.preventDefault();
-const email = document.getElementById('login-email').value.trim();
-const password = document.getElementById('login-pass').value.trim();
-const msg = document.getElementById('login-msg');
-msg.className = "text-xs text-center text-slate-400";
-msg.innerText = "A autenticar na nuvem...";
-msg.classList.remove('hidden');
-​try {
-const res = await fetch('/api/login', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ email, password })
-});
-const data = await res.json();
-​if (res.ok && data.success) {
-localStorage.setItem('agro_cloud_user', JSON.stringify(data.user));
-window.location.href = 'dashboard.html';
-} else {
-msg.className = "text-xs text-center text-rose-400";
-msg.innerText = data.error || 'E-mail ou palavra-passe incorretos.';
-}
-} catch (err) {
-msg.className = "text-xs text-center text-rose-400";
-msg.innerText = 'Erro de ligação ao servidor cloud.';
-}
-});
-</script>
+
+    <div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
+        <div class="text-center space-y-1">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
+            <p class="text-xs text-slate-400">Plataforma de Trading em Nuvem</p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">E-mail</label>
+                <input type="email" id="login-email" required placeholder="ex: seu@email.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs text-slate-400">Palavra-passe</label>
+                    <a href="#" onclick="alert('Recuperação enviada para o seu e-mail.'); return false;" class="text-xs text-emerald-400 hover:underline">Esqueci a senha?</a>
+                </div>
+                <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div id="login-msg" class="text-xs text-center hidden"></div>
+
+            <button type="submit" id="login-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
+                Entrar na Conta
+            </button>
+        </form>
+
+        <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800 space-y-2">
+            <p>Ainda não tem uma conta?</p>
+            <a href="register.html" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold py-2.5 rounded-xl transition text-center text-sm">
+                Criar Nova Conta
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Impede o recarregamento e o ? no link
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-pass').value.trim();
+            const msg = document.getElementById('login-msg');
+            const btn = document.getElementById('login-btn');
+            
+            msg.className = "text-xs text-center text-slate-400";
+            msg.innerText = "A autenticar...";
+            msg.classList.remove('hidden');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    localStorage.setItem('agro_cloud_user', JSON.stringify(data.user));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    msg.className = "text-xs text-center text-rose-400";
+                    msg.innerText = data.error || 'E-mail ou palavra-passe incorretos.';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                msg.className = "text-xs text-center text-rose-400";
+                msg.innerText = 'Erro de ligação ao servidor.';
+                btn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
