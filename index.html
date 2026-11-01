@@ -1,10 +1,12 @@
+```html
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroTrade Pro - Painel do Trader</title>
+    <title>AgroTrade Pro - Plataforma de Commodities</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
@@ -37,6 +39,56 @@
                     Entrar na Plataforma
                 </button>
             </form>
+
+            <div class="text-center text-xs text-slate-400 pt-3 border-t border-slate-800 space-y-2">
+                <p>Ainda não tem conta?</p>
+                <button onclick="toggleAuthMode('register')" class="w-full bg-[#0a0f1d] hover:bg-slate-800 border border-slate-700/80 text-emerald-400 font-bold py-3 rounded-xl transition text-center text-sm shadow-md">
+                    Criar Nova Conta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REGISTER SCREEN -->
+    <div id="register-screen" class="hidden fixed inset-0 bg-[#0b0f19] z-50 flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-[#131b2e] border border-slate-800/80 p-8 rounded-3xl shadow-2xl space-y-6 backdrop-blur-xl">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-400 mb-1">
+                    🌱
+                </div>
+                <h1 class="text-3xl font-extrabold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">Criar Conta</h1>
+                <p class="text-xs text-slate-400">Junte-se ao AgroTrade Pro na Nuvem Supabase</p>
+            </div>
+
+            <form id="register-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Nome de Utilizador</label>
+                    <input type="text" id="reg-username" required placeholder="O seu nome" class="w-full bg-[#0a0f1d] border border-slate-700/80 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">E-mail</label>
+                    <input type="email" id="reg-email" required placeholder="ex: seu@email.com" class="w-full bg-[#0a0f1d] border border-slate-700/80 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Palavra-passe</label>
+                    <input type="password" id="reg-pass" required placeholder="••••••••" class="w-full bg-[#0a0f1d] border border-slate-700/80 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500 transition">
+                </div>
+
+                <div id="register-error" class="text-xs text-rose-400 text-center font-medium bg-rose-950/30 border border-rose-500/20 py-2 rounded-xl hidden"></div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-extrabold py-3.5 rounded-xl shadow-lg shadow-emerald-950/50 transition tracking-wide text-sm">
+                    Registar e Ganhar 100 $ZP
+                </button>
+            </form>
+
+            <div class="text-center text-xs text-slate-400 pt-3 border-t border-slate-800 space-y-2">
+                <p>Já tem uma conta?</p>
+                <button onclick="toggleAuthMode('login')" class="w-full bg-[#0a0f1d] hover:bg-slate-800 border border-slate-700/80 text-emerald-400 font-bold py-3 rounded-xl transition text-center text-sm shadow-md">
+                    Fazer Login
+                </button>
+            </div>
         </div>
     </div>
 
@@ -92,10 +144,10 @@
                     <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl"></div>
                     <div>
                         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Saldo na Nuvem
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Saldo na Nuvem Supabase
                         </p>
                         <h2 id="user-balance" class="text-3xl font-black text-emerald-400 mt-1">100 $ZP</h2>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Moeda Oficial ZPay</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Moeda Oficial ZPay ($ZP)</p>
                     </div>
                     <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-xl font-black">
                         $ZP
@@ -134,7 +186,7 @@
             <!-- Chart & Trading Panel Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <!-- Live Chart Section (Takes 2 Columns) -->
+                <!-- Live Chart Section -->
                 <div class="lg:col-span-2 bg-[#131b2e] border border-slate-800/80 p-6 rounded-3xl shadow-xl flex flex-col justify-between space-y-4">
                     <div class="flex justify-between items-center">
                         <div>
@@ -239,30 +291,46 @@
         </div>
     </div>
 
-    <!-- CLIENT SCRIPT -->
+    <!-- SCRIPT DE SUPABASE E INTERAÇÃO -->
     <script>
+        const SUPABASE_URL = "https://zwjuglicfmvebzwoesvd.supabase.co";
+        const SUPABASE_ANON_KEY = "Sb_publishable_yJCyYgFteeyrEFsLgGcwcA_sH9vdtlo"; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let currentUser = null;
         let currentCommodity = "Café";
         let currentPrice = 485.50;
         let currentBags = "6.000";
         let marketChart = null;
 
-        function checkLoginState() {
-            const savedUser = localStorage.getItem('agro_user');
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('agro_cloud_user');
             if (savedUser) {
                 try {
                     currentUser = JSON.parse(savedUser);
                     document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('register-screen').classList.add('hidden');
                     document.getElementById('dashboard-screen').classList.remove('hidden');
                     document.getElementById('user-welcome').innerText = "Trader: " + currentUser.username + " (" + currentUser.email + ")";
                     document.getElementById('user-balance').innerText = (currentUser.balance !== undefined ? currentUser.balance : 100) + " $ZP";
                     initChart();
                 } catch(e) {
-                    localStorage.removeItem('agro_user');
+                    localStorage.removeItem('agro_cloud_user');
                 }
+            }
+        });
+
+        function toggleAuthMode(mode) {
+            if (mode === 'register') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('register-screen').classList.remove('hidden');
+            } else {
+                document.getElementById('register-screen').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
             }
         }
 
+        // LOGIN
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
@@ -271,28 +339,55 @@
             errorDiv.classList.add('hidden');
 
             try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await response.json();
+                const { data, error } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', password)
+                    .single();
 
-                if (response.ok && data.success) {
-                    localStorage.setItem('agro_user', JSON.stringify(data.user));
-                    checkLoginState();
-                } else {
-                    errorDiv.innerText = data.error || 'E-mail ou palavra-passe incorretos.';
+                if (error || !data) {
+                    errorDiv.innerText = "E-mail ou palavra-passe incorretos.";
                     errorDiv.classList.remove('hidden');
+                } else {
+                    localStorage.setItem('agro_cloud_user', JSON.stringify(data));
+                    location.reload();
                 }
             } catch (err) {
-                errorDiv.innerText = 'Erro de ligação ao servidor.';
+                errorDiv.innerText = "Erro ao ligar ao Supabase.";
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // REGISTER
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-pass').value.trim();
+            const errorDiv = document.getElementById('register-error');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const { error } = await supabaseClient
+                    .from('users')
+                    .insert([{ username, email, password, balance: 100.0 }]);
+
+                if (error) {
+                    errorDiv.innerText = "Este e-mail já está registado ou ocorreu um erro.";
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    alert("Conta criada com sucesso! Ganhou 100 $ZP de bónus. Faça login.");
+                    toggleAuthMode('login');
+                }
+            } catch (err) {
+                errorDiv.innerText = "Erro ao registar.";
                 errorDiv.classList.remove('hidden');
             }
         });
 
         function logout() {
-            localStorage.removeItem('agro_user');
+            localStorage.removeItem('agro_cloud_user');
             location.reload();
         }
 
@@ -348,7 +443,7 @@
             }
         }
 
-        function executeTrade(type) {
+        async function executeTrade(type) {
             const amountInput = document.getElementById('trade-amount');
             const investVal = parseFloat(amountInput.value) || 0;
 
@@ -366,6 +461,20 @@
             const isWin = Math.random() > 0.42;
             const percentage = isWin ? (Math.random() * 60 + 10) : -(Math.random() * 50 + 10);
             const resultValue = (investVal * (percentage / 100));
+
+            currentUser.balance = Math.round((currentUser.balance || 100) + resultValue);
+
+            try {
+                await supabaseClient
+                    .from('users')
+                    .update({ balance: currentUser.balance })
+                    .eq('id', currentUser.id);
+            } catch (err) {
+                console.error("Erro ao sincronizar saldo no Supabase:", err);
+            }
+
+            localStorage.setItem('agro_cloud_user', JSON.stringify(currentUser));
+            document.getElementById('user-balance').innerText = currentUser.balance + ' $ZP';
 
             const resultCard = document.getElementById('result-card');
             const badge = document.getElementById('result-badge');
@@ -393,10 +502,6 @@
                 statusText.innerText = "O mercado oscilou contra a sua posição. Tente recuperar na próxima!";
             }
 
-            currentUser.balance = Math.round((currentUser.balance || 100) + resultValue);
-            localStorage.setItem('agro_user', JSON.stringify(currentUser));
-            document.getElementById('user-balance').innerText = currentUser.balance + ' $ZP';
-
             resultCard.classList.remove('hidden');
             resultCard.scrollIntoView({ behavior: 'smooth' });
         }
@@ -413,20 +518,21 @@
             document.getElementById('shop-modal').classList.add('hidden');
         }
 
-        function buyCoins(amount) {
+        async function buyCoins(amount) {
             currentUser.balance = (currentUser.balance || 100) + amount;
-            localStorage.setItem('agro_user', JSON.stringify(currentUser));
+            try {
+                await supabaseClient
+                    .from('users')
+                    .update({ balance: currentUser.balance })
+                    .eq('id', currentUser.id);
+            } catch (err) {}
+
+            localStorage.setItem('agro_cloud_user', JSON.stringify(currentUser));
             document.getElementById('user-balance').innerText = currentUser.balance + ' $ZP';
             closeStore();
             alert("Compra efetuada com sucesso! Foram creditados " + amount + " $ZP na sua conta.");
         }
-
-        window.addEventListener('DOMContentLoaded', checkLoginState);
     </script>
 </body>
 </html>
-```eof
-
-### O que fazer agora:
-1. Copie todo o código acima e substitua no seu ficheiro principal **`app.html`** (ou index/dashboard no seu GitHub).
-2. Faça o commit e abra o seu site em aba anónima. Agora tem uma interface lindíssima, com gráficos em tempo real, cartões piscantes de vendas de sacas (Café, Trigo, Feijão, Arroz) e a loja de moedas oficial **$ZP** a funcionar em pleno!
+```
