@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroPay — Simulador de Commodities</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:dark}
+  body{font-family:Outfit,system-ui,sans-serif;background:#020617;color:#e2e8f0}
+  .panel{background:#0f172a;border:1px solid #1e293b;border-radius:20px}
+  .field{width:100%;background:#020617;border:1px solid #334155;border-radius:12px;padding:12px 14px;color:#f8fafc;outline:none;transition:.15s}
+  .field:focus{border-color:#fbbf24;box-shadow:0 0 0 3px #fbbf2420}
+  .gold{background:linear-gradient(110deg,#f59e0b,#fde047);color:#111827}
+  .btn{border-radius:12px;padding:12px 16px;font-weight:800;transition:.15s;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .hidden{display:none!important}
+  .tab{padding:10px 14px;border-radius:10px;color:#94a3b8;font-weight:700;cursor:pointer}
+  .tab.active{background:#1e293b;color:#fbbf24}
+</style>
+</head>
+<body class="min-h-screen">
+<div class="max-w-6xl mx-auto p-4 md:p-8">
+
+  <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <a href="/" class="block">
+      <div class="text-amber-400 text-xs font-extrabold tracking-[.25em]">AGROPAY</div>
+      <h1 class="text-2xl md:text-3xl font-extrabold mt-1">Simulador de Negociação</h1>
+      <p class="text-slate-400 text-sm mt-1">Ambiente educativo • créditos fictícios • sem dinheiro real</p>
+    </a>
+    <div id="headerUser" class="hidden items-center gap-4 panel px-4 py-3">
+      <div>
+        <div id="headerName" class="font-bold text-sm"></div>
+        <div class="text-[11px] text-slate-400">Saldo simulado</div>
+      </div>
+      <div id="headerBalance" class="text-amber-400 font-extrabold text-xl">0 ZP</div>
+      <a href="/app" class="btn gold text-xs px-3 py-2">Abrir painel</a>
+    </div>
+  </header>
+
+  <!-- AUTH -->
+  <section id="authView" class="max-w-md mx-auto panel p-6 md:p-8">
+    <div class="flex gap-2 mb-6">
+      <button id="loginTab" class="tab active" type="button">Entrar</button>
+      <button id="registerTab" class="tab" type="button">Criar conta</button>
+    </div>
+    <h2 id="authTitle" class="text-2xl font-extrabold mb-2">Bem-vindo de volta</h2>
+    <p id="authDesc" class="text-slate-400 text-sm mb-6">Entre para acessar seu simulador.</p>
+
+    <form id="authForm" class="space-y-4" novalidate>
+      <div id="nameWrap" class="hidden">
+        <label class="block text-sm font-semibold mb-2" for="nameInput">Nome</label>
+        <input id="nameInput" class="field" autocomplete="name" maxlength="50" placeholder="Seu nome">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2" for="emailInput">E-mail</label>
+        <input id="emailInput" class="field" type="email" autocomplete="email" maxlength="150" placeholder="voce@email.com">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2" for="passwordInput">Palavra-passe</label>
+        <input id="passwordInput" class="field" type="password" autocomplete="current-password" placeholder="Mínimo de 8 caracteres">
+      </div>
+      <div id="confirmWrap" class="hidden">
+        <label class="block text-sm font-semibold mb-2" for="confirmInput">Confirmar palavra-passe</label>
+        <input id="confirmInput" class="field" type="password" autocomplete="new-password" placeholder="Repita a palavra-passe">
+      </div>
+      <button id="authSubmit" class="btn gold w-full" type="submit">Entrar</button>
+    </form>
+
+    <p id="authMessage" class="text-sm mt-4 min-h-5" role="status"></p>
+
+    <div class="border-t border-slate-800 mt-6 pt-4 text-xs text-slate-500">
+      As contas são guardadas numa base de dados D1 na nuvem. Não reutilize uma palavra-passe real.
+    </div>
+  </section>
+
+  <!-- APP PREVIEW (logged in) -->
+  <main id="appView" class="hidden space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section class="panel p-5 space-y-4">
+        <div>
+          <h2 class="text-lg font-extrabold">Nova operação</h2>
+          <p class="text-slate-400 text-sm">Escolha um ativo e simule a direção.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2" for="assetSelect">Commodity</label>
+          <select id="assetSelect" class="field"></select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2" for="stakeInput">Valor da operação (ZP)</label>
+          <input id="stakeInput" class="field" type="number" min="1" step="1" value="50">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="upBtn" class="btn bg-emerald-600 hover:bg-emerald-500 text-white">▲ Alta</button>
+          <button id="downBtn" class="btn bg-rose-600 hover:bg-rose-500 text-white">▼ Baixa</button>
+        </div>
+        <p class="text-xs text-slate-500">Resultado aleatório para demonstração; não representa cotação nem previsão de mercado.</p>
+      </section>
+
+      <section class="panel p-5 lg:col-span-2 flex flex-col">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h2 id="chartTitle" class="text-lg font-extrabold">Mercado</h2>
+            <p class="text-xs text-slate-400">Simulação ilustrativa</p>
+          </div>
+          <span class="text-xs text-amber-400 border border-amber-500/30 rounded-full px-3 py-1">SIMULAÇÃO</span>
+        </div>
+        <div class="rounded-xl bg-slate-950 border border-slate-800 min-h-52 flex flex-col items-center justify-center p-5 text-center">
+          <div id="chartArrow" class="text-5xl text-slate-600">〰</div>
+          <div id="priceDisplay" class="text-3xl font-extrabold mt-2">R$ 0,00</div>
+          <div id="priceChange" class="text-sm text-slate-400 mt-1">Aguardando operação</div>
+        </div>
+        <div id="resultBox" class="mt-4 rounded-xl bg-slate-950 border border-slate-800 p-4 text-sm text-slate-300" role="status">
+          Faça uma operação para ver o resultado da rodada.
+        </div>
+      </section>
+    </div>
+
+    <section class="panel p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-extrabold">Créditos de demonstração</h2>
+          <p class="text-sm text-slate-400">Reponha o saldo fictício para continuar a testar.</p>
+        </div>
+        <button id="resetBalanceBtn" class="btn gold">Repor saldo de 1.000 ZP</button>
+      </div>
+      <p class="text-xs text-slate-500">Não há cobrança nem integração Pix. Nenhum pagamento é realizado.</p>
+    </section>
+
+    <section class="panel p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 class="text-lg font-extrabold">Histórico de operações</h2>
+        <button id="refreshHistoryBtn" class="text-xs text-slate-400 underline">Atualizar</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="text-slate-400 border-b border-slate-800">
+            <tr><th class="py-3 pr-3">Data</th><th class="py-3 pr-3">Ativo</th><th class="py-3 pr-3">Direção</th><th class="py-3 pr-3">Valor</th><th class="py-3 pr-3">Resultado</th></tr>
+          </thead>
+          <tbody id="historyBody"><tr><td colspan="5" class="py-4 text-slate-500">Carregando…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center text-xs text-slate-600 mt-8">
+    AgroPay • Protótipo demonstrativo • Não oferece investimento ou negociação real
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  let mode = 'login';
+  let user = null;
+
+  const money = (v) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v) || 0);
+  const escapeHTML = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function setMessage(text, type) {
+    const el = $('authMessage');
+    el.textContent = text || '';
+    el.className = 'text-sm mt-4 min-h-5 ' + (type === 'error' ? 'text-rose-400' : type === 'ok' ? 'text-emerald-400' : 'text-slate-400');
+  }
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+    let data = {};
+    try { data = await res.json(); } catch { /* non JSON */ }
+    if (!res.ok) throw new Error(data.error || 'Erro de ligação ao servidor.');
+    return data;
+  }
+
+  function setMode(next) {
+    mode = next;
+    const registering = mode === 'register';
+    $('loginTab').classList.toggle('active', !registering);
+    $('registerTab').classList.toggle('active', registering);
+    $('nameWrap').classList.toggle('hidden', !registering);
+    $('confirmWrap').classList.toggle('hidden', !registering);
+    $('authTitle').textContent = registering ? 'Criar sua conta' : 'Bem-vindo de volta';
+    $('authDesc').textContent = registering
+      ? 'Cadastre-se para usar o simulador com 1.000 ZP de demonstração.'
+      : 'Entre para acessar seu simulador.';
+    $('authSubmit').textContent = registering ? 'Criar conta' : 'Entrar';
+    $('passwordInput').autocomplete = registering ? 'new-password' : 'current-password';
+    setMessage('');
+  }
+
+  function showApp(data) {
+    user = data.user;
+    $('authView').classList.add('hidden');
+    $('appView').classList.remove('hidden');
+    $('headerUser').classList.remove('hidden');
+    $('headerUser').classList.add('flex');
+    $('headerName').textContent = user.username;
+    $('headerBalance').textContent = money(user.balance) + ' ZP';
+    loadAssets();
+    loadHistory();
+  }
+
+  function showAuth() {
+    user = null;
+    $('appView').classList.add('hidden');
+    $('headerUser').classList.add('hidden');
+    $('headerUser').classList.remove('flex');
+    $('authView').classList.remove('hidden');
+  }
+
+  function updateBalance(balance) {
+    if (!user) return;
+    user.balance = balance;
+    $('headerBalance').textContent = money(balance) + ' ZP';
+  }
+
+  // ---------- assets ----------
+  let assets = [];
+
+  async function loadAssets() {
+    try {
+      assets = await api('/api/commodities');
+    } catch {
+      assets = [];
+    }
+    const select = $('assetSelect');
+    select.innerHTML = assets
+      .map((a) => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.icon + ' ' + a.name)}</option>`)
+      .join('');
+    syncChart();
+  }
+
+  function selectedAsset() {
+    return assets.find((a) => a.id === $('assetSelect').value) || assets[0] || null;
+  }
+
+  function syncChart() {
+    const asset = selectedAsset();
+    if (!asset) return;
+    $('chartTitle').textContent = 'Mercado: ' + asset.name;
+    $('priceDisplay').textContent = 'R$ ' + money(asset.price);
+    $('priceChange').textContent = (asset.change >= 0 ? '+' : '') + asset.change.toFixed(1) + '% na sessão';
+    $('priceChange').className = 'text-sm mt-1 ' + (asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400');
+  }
+
+  $('assetSelect').addEventListener('change', syncChart);
+
+  // ---------- trading ----------
+  async function trade(side) {
+    const asset = selectedAsset();
+    if (!asset) return;
+    const stake = Math.round(Number($('stakeInput').value));
+
+    if (!Number.isFinite(stake) || stake < 1) {
+      $('resultBox').textContent = 'Informe um valor inteiro de pelo menos 1 ZP.';
+      return;
+    }
+    if (user && stake > user.balance) {
+      $('resultBox').textContent = 'Saldo insuficiente. Reponha o saldo de demonstração para continuar.';
+      return;
+    }
+
+    $('upBtn').disabled = true;
+    $('downBtn').disabled = true;
+
+    try {
+      const data = await api('/api/trade', {
+        method: 'POST',
+        body: JSON.stringify({ commodity: asset.id, side, stake }),
+      });
+
+      const t = data.trade;
+      const won = t.outcome === 'win';
+      $('chartArrow').textContent = side === 'up' ? '▲' : '▼';
+      $('chartArrow').className = 'text-5xl ' + (won ? 'text-emerald-400' : 'text-rose-400');
+      $('priceDisplay').textContent = 'R$ ' + money(t.exitPrice);
+      $('priceChange').textContent = (won ? 'Movimento a favor' : 'Movimento contra') +
+        ' • entrada R$ ' + money(t.entryPrice);
+
+      $('resultBox').innerHTML = won
+        ? '<strong class="text-emerald-400">Rodada vencedora.</strong> Retorno total: ' + money(t.payout) +
+          ' ZP. Lucro líquido: <strong class="text-emerald-400">+' + money(t.net) + ' ZP</strong>.'
+        : '<strong class="text-rose-400">Rodada perdedora.</strong> Perda simulada: <strong class="text-rose-400">-' +
+          money(t.stake) + ' ZP</strong>.';
+
+      updateBalance(data.balance);
+      loadHistory();
+    } catch (err) {
+      $('resultBox').textContent = err.message;
+    } finally {
+      $('upBtn').disabled = false;
+      $('downBtn').disabled = false;
+    }
+  }
+
+  $('upBtn').addEventListener('click', () => trade('up'));
+  $('downBtn').addEventListener('click', () => trade('down'));
+
+  // ---------- history ----------
+  async function loadHistory() {
+    const tbody = $('historyBody');
+    try {
+      const rows = await api('/api/history');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-slate-500">Nenhuma operação ainda.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map((r) => {
+        const date = new Date(r.createdAt.replace(' ', 'T') + 'Z').toLocaleString('pt-BR');
+        const gain = r.net >= 0;
+        return '<tr class="border-b border-slate-800/70">' +
+          '<td class="py-3 pr-3 whitespace-nowrap text-slate-400">' + escapeHTML(date) + '</td>' +
+          '<td class="py-3 pr-3">' + escapeHTML(r.commodity) + '</td>' +
+          '<td class="py-3 pr-3">' + (r.side === 'up' ? 'Alta' : 'Baixa') + '</td>' +
+          '<td class="py-3 pr-3">' + money(r.stake) + ' ZP</td>' +
+          '<td class="py-3 pr-3 font-bold ' + (gain ? 'text-emerald-400' : 'text-rose-400') + '">' +
+            (gain ? '+' : '') + money(r.net) + ' ZP</td>' +
+          '</tr>';
+      }).join('');
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-rose-400">' + escapeHTML(err.message) + '</td></tr>';
+    }
+  }
+
+  $('refreshHistoryBtn').addEventListener('click', loadHistory);
+
+  // ---------- demo balance ----------
+  $('resetBalanceBtn').addEventListener('click', async () => {
+    try {
+      const data = await api('/api/settings', { method: 'POST', body: JSON.stringify({ startingBalance: 1000 }) });
+      updateBalance(data.balance);
+      $('resultBox').textContent = 'Saldo de demonstração reposto em ' + money(data.balance) + ' ZP. Nenhum pagamento foi feito.';
+    } catch (err) {
+      $('resultBox').textContent = err.message;
+    }
+  });
+
+  // ---------- auth ----------
+  $('loginTab').addEventListener('click', () => setMode('login'));
+  $('registerTab').addEventListener('click', () => setMode('register'));
+
+  $('authForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const email = $('emailInput').value.trim().toLowerCase();
+    const password = $('passwordInput').value;
+
+    if (!email || !password) {
+      setMessage('Preencha o e-mail e a palavra-passe.', 'error');
+      return;
+    }
+
+    const payload = { email, password };
+
+    if (mode === 'register') {
+      const username = $('nameInput').value.trim();
+      if (username.length < 2) return setMessage('Informe um nome válido.', 'error');
+      if (password.length < 8) return setMessage('A palavra-passe precisa ter pelo menos 8 caracteres.', 'error');
+      if (password !== $('confirmInput').value) return setMessage('As palavras-passe não coincidem.', 'error');
+      payload.username = username;
+    }
+
+    $('authSubmit').disabled = true;
+    try {
+      const data = await api(mode === 'register' ? '/api/register' : '/api/login', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      $('authForm').reset();
+      setMessage('');
+      showApp(data);
+    } catch (err) {
+      setMessage(err.message, 'error');
+    } finally {
+      $('authSubmit').disabled = false;
+    }
+  });
+
+  // ---------- boot ----------
+  (async () => {
+    setMode('login');
+    try {
+      const data = await api('/api/me');
+      showApp(data);
+    } catch {
+      showAuth();
+    }
+  })();
+})();
+</script>
+</body>
+</html>
