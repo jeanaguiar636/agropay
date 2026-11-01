@@ -5,32 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AgroTrade Pro - Painel do Trader</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#0f172a] text-slate-100 min-h-screen flex flex-col font-sans">
-​<!-- Top Header -->
-<header class="bg-[#1e293b] border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow-md">
+​<header class="bg-[#1e293b] border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow-md">
 <span class="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</span>
 <button onclick="logout()" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900/40 border border-rose-500/30 px-3 py-1.5 rounded-xl text-sm font-semibold transition">Sair</button>
 </header>
-​<!-- Menu de Commodities -->
-<nav class="bg-[#162032] border-b border-slate-800 px-4 py-3 overflow-x-auto flex gap-3">
+​<nav class="bg-[#162032] border-b border-slate-800 px-4 py-3 overflow-x-auto flex gap-3">
 <button onclick="selectCommodity('Café', 450)" class="commodity-btn bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap shadow-lg transition">Café</button>
 <button onclick="selectCommodity('Trigo', 320)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Trigo</button>
 <button onclick="selectCommodity('Feijão', 210)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Feijão</button>
 <button onclick="selectCommodity('Arroz', 540)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Arroz</button>
 </nav>
-​<!-- Conteúdo Principal -->
-<main class="max-w-4xl mx-auto w-full p-4 flex-1 space-y-4 pb-12">
-​<!-- Saldo Cloud -->
+​<main class="max-w-4xl mx-auto w-full p-4 flex-1 space-y-4 pb-12">
 <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl shadow-xl flex justify-between items-center">
 <div>
-<p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Saldo na Nuvem</p>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Saldo na Nuvem Supabase</p>
 <h2 id="user-balance" class="text-2xl font-black text-emerald-400 mt-1">0.00 ZPay ($ZP)</h2>
-<p id="user-welcome" class="text-xs text-slate-400 mt-0.5">A carregar dados do utilizador...</p>
+<p id="user-welcome" class="text-xs text-slate-400 mt-0.5">A carregar...</p>
 </div>
 </div>
-​<!-- Painel de Operações -->
-<div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
+​<div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
 <div class="flex justify-between items-center">
 <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Ativo em Tempo Real</span>
 <span id="selected-title" class="text-xl font-bold text-white">Saca de Café</span>
@@ -54,8 +50,7 @@ VENDER (Baixa)
 </button>
 </div>
 </div>
-​<!-- RESULTADO (Verde para ganho / Vermelho para perda) -->
-<div id="result-card" class="hidden bg-[#1e293b] border p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300">
+​<div id="result-card" class="hidden bg-[#1e293b] border p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300">
 <div class="flex justify-between items-center">
 <span id="result-badge" class="text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider"></span>
 <span class="text-xs text-slate-400">Ativo: <strong id="result-comm" class="text-white"></strong></span>
@@ -71,7 +66,10 @@ Fechar & Nova Operação
 </div>
 </main>
 ​<script>
-let currentUser = null;
+const SUPABASE_URL = "https://zwjuglicfmvebzwoesvd.supabase.co";
+const SUPABASE_ANON_KEY = "Sb_publishable_yJCyYgFteeyrEFsLgGcwcA_sH9vdtlo";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+​let currentUser = null;
 let currentCommodity = "Café";
 let currentPrice = 450;
 ​window.addEventListener('DOMContentLoaded', () => {
@@ -100,7 +98,7 @@ btn.className = "commodity-btn bg-emerald-600 text-white px-4 py-2 rounded-xl te
 }
 });
 }
-​function executeTrade(type) {
+​async function executeTrade(type) {
 const amountInput = document.getElementById('trade-amount');
 const investVal = parseFloat(amountInput.value) || 0;
 ​if (investVal <= 0) {
@@ -110,6 +108,17 @@ return;
 ​const isWin = Math.random() > 0.45;
 const percentage = isWin ? (Math.random() * 50 + 10) : -(Math.random() * 45 + 10);
 const profitLoss = investVal * (percentage / 100);
+​currentUser.balance = Math.max(0, (currentUser.balance || 100) + profitLoss);
+​try {
+await supabaseClient
+.from('users')
+.update({ balance: currentUser.balance })
+.eq('id', currentUser.id);
+} catch (err) {
+console.error("Erro ao sincronizar saldo na nuvem:", err);
+}
+​localStorage.setItem('agro_cloud_user', JSON.stringify(currentUser));
+document.getElementById('user-balance').innerText = currentUser.balance.toFixed(2) + " ZPay ($ZP)";
 ​const resultCard = document.getElementById('result-card');
 const badge = document.getElementById('result-badge');
 const valEl = document.getElementById('result-value');
@@ -123,7 +132,7 @@ badge.innerText = "LUCRO OBTIDO";
 valEl.className = "text-3xl font-black text-emerald-400";
 valEl.innerText = "+" + profitLoss.toFixed(2) + " $ZP (+" + percentage.toFixed(1) + "%)";
 descEl.className = "text-xs font-medium mt-1 text-emerald-300";
-descEl.innerText = "Excelente! Lucro registado com sucesso.";
+descEl.innerText = "Lucro guardado na nuvem com sucesso!";
 } else {
 resultCard.className = "bg-rose-950/40 border border-rose-500/50 p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300";
 badge.className = "text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider bg-rose-500/20 text-rose-400";
@@ -131,11 +140,8 @@ badge.innerText = "PREJUÍZO REGISTADO";
 valEl.className = "text-3xl font-black text-rose-400";
 valEl.innerText = profitLoss.toFixed(2) + " $ZP (" + percentage.toFixed(1) + "%)";
 descEl.className = "text-xs font-medium mt-1 text-rose-300";
-descEl.innerText = "Prejuízo registado nesta operação.";
+descEl.innerText = "Prejuízo atualizado na nuvem.";
 }
-​currentUser.balance = Math.max(0, currentUser.balance + profitLoss);
-localStorage.setItem('agro_cloud_user', JSON.stringify(currentUser));
-document.getElementById('user-balance').innerText = currentUser.balance.toFixed(2) + " ZPay ($ZP)";
 ​resultCard.classList.remove('hidden');
 resultCard.scrollIntoView({ behavior: 'smooth' });
 }
