@@ -14,26 +14,24 @@
             <p class="text-xs text-slate-400">Plataforma de Trading em Nuvem</p>
         </div>
 
-        <form id="login-form" class="space-y-4">
+        <!-- Formulário sem action para evitar recarregamento -->
+        <div id="login-form" class="space-y-4">
             <div>
                 <label class="block text-xs text-slate-400 mb-1">E-mail</label>
                 <input type="email" id="login-email" required placeholder="ex: seu@email.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
             </div>
 
             <div>
-                <div class="flex justify-between items-center mb-1">
-                    <label class="text-xs text-slate-400">Palavra-passe</label>
-                    <a href="#" onclick="alert('Recuperação enviada para o seu e-mail.'); return false;" class="text-xs text-emerald-400 hover:underline">Esqueci a senha?</a>
-                </div>
+                <label class="block text-xs text-slate-400 mb-1">Palavra-passe</label>
                 <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
             </div>
 
             <div id="login-msg" class="text-xs text-center hidden"></div>
 
-            <button type="submit" id="login-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
+            <button type="button" onclick="fazerLogin()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
                 Entrar na Conta
             </button>
-        </form>
+        </div>
 
         <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-800 space-y-2">
             <p>Ainda não tem uma conta?</p>
@@ -44,18 +42,21 @@
     </div>
 
     <script>
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Impede o recarregamento e o ? no link
-            
+        async function fazerLogin() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-pass').value.trim();
             const msg = document.getElementById('login-msg');
-            const btn = document.getElementById('login-btn');
-            
+
+            if (!email || !password) {
+                msg.className = "text-xs text-center text-rose-400";
+                msg.innerText = "Preencha o e-mail e a palavra-passe.";
+                msg.classList.remove('hidden');
+                return;
+            }
+
             msg.className = "text-xs text-center text-slate-400";
-            msg.innerText = "A autenticar...";
+            msg.innerText = "A autenticar na nuvem...";
             msg.classList.remove('hidden');
-            btn.disabled = true;
 
             try {
                 const res = await fetch('/api/login', {
@@ -71,14 +72,12 @@
                 } else {
                     msg.className = "text-xs text-center text-rose-400";
                     msg.innerText = data.error || 'E-mail ou palavra-passe incorretos.';
-                    btn.disabled = false;
                 }
             } catch (err) {
                 msg.className = "text-xs text-center text-rose-400";
-                msg.innerText = 'Erro de ligação ao servidor.';
-                btn.disabled = false;
+                msg.innerText = 'Erro de ligação ao servidor cloud.';
             }
-        });
+        }
     </script>
 </body>
 </html>
