@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel do Trader — AgroPay</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:dark}
+  body{font-family:Outfit,system-ui,sans-serif}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .hidden{display:none!important}
+</style>
+</head>
+<body class="bg-[#0f172a] text-slate-100 min-h-screen flex flex-col">
+
+<!-- Loading / guard -->
+<div id="guard" class="fixed inset-0 bg-[#0f172a] z-50 flex items-center justify-center">
+  <div class="text-center space-y-3">
+    <div class="w-10 h-10 border-4 border-slate-700 border-t-emerald-400 rounded-full animate-spin mx-auto"></div>
+    <p class="text-sm text-slate-400">Verificando sessão…</p>
+  </div>
+</div>
+
+<!-- Painel -->
+<div id="screen" class="hidden flex-1 flex flex-col">
+  <header class="bg-[#1e293b] border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow-md">
+    <a href="/" class="flex items-center gap-2">
+      <span class="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroPay</span>
+    </a>
+    <div class="flex items-center gap-2">
+      <a id="adminLink" href="/admin" class="hidden text-xs bg-slate-800 text-emerald-400 hover:text-emerald-300 px-3 py-1.5 rounded-xl border border-slate-700 font-semibold">Admin</a>
+      <button id="logoutBtn" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900/40 border border-rose-500/30 px-3 py-1.5 rounded-xl text-sm font-semibold">Sair</button>
+    </div>
+  </header>
+
+  <nav id="assetNav" class="bg-[#162032] border-b border-slate-800 px-4 py-3 overflow-x-auto flex gap-3 no-scrollbar"></nav>
+
+  <main class="max-w-4xl mx-auto w-full p-4 flex-1 space-y-4 pb-12">
+    <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl shadow-xl flex justify-between items-center">
+      <div>
+        <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Saldo Disponível</p>
+        <h2 id="balance" class="text-2xl font-black text-emerald-400 mt-1">—</h2>
+        <p id="welcome" class="text-xs text-slate-400 mt-0.5">—</p>
+      </div>
+      <button id="addCredits" class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-amber-500/25">
+        + Repor 1.000 ZP
+      </button>
+    </div>
+
+    <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
+      <div class="flex justify-between items-center">
+        <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Ativo selecionado</span>
+        <span id="assetTitle" class="text-xl font-bold text-white">—</span>
+      </div>
+      <div class="flex justify-between items-center bg-[#0f172a] p-3 rounded-xl border border-slate-800">
+        <span class="text-xs text-slate-400">Cotação simulada</span>
+        <span id="assetPrice" class="text-lg font-bold text-amber-400">—</span>
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1" for="stake">Valor da operação (ZP)</label>
+        <input type="number" id="stake" value="50" min="1" step="1"
+               class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 pt-2">
+        <button data-side="up" class="trade-btn bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-900/30 disabled:opacity-50">
+          COMPRAR (Alta)
+        </button>
+        <button data-side="down" class="trade-btn bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-rose-900/30 disabled:opacity-50">
+          VENDER (Baixa)
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-500">Simulação educativa com resultado aleatório. Não é investimento real.</p>
+    </div>
+
+    <div id="result" class="hidden bg-[#1e293b] border p-5 rounded-2xl shadow-2xl space-y-3"></div>
+
+    <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl shadow-xl">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="font-bold">Histórico</h3>
+        <button id="refresh" class="text-xs text-slate-400 underline">Atualizar</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="text-slate-400 border-b border-slate-800">
+            <tr><th class="py-2 pr-3">Data</th><th class="py-2 pr-3">Ativo</th><th class="py-2 pr-3">Direção</th><th class="py-2 pr-3">Valor</th><th class="py-2 pr-3">Resultado</th></tr>
+          </thead>
+          <tbody id="history"><tr><td colspan="5" class="py-4 text-slate-500">Carregando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const money = (v) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v) || 0);
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  let user = null;
+  let assets = [];
+  let selectedId = null;
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, ...options });
+    let data = {};
+    try { data = await res.json(); } catch { /* ignore */ }
+    if (res.status === 401) { location.replace('/'); throw new Error('Sessão expirada.'); }
+    if (!res.ok) throw new Error(data.error || 'Erro no servidor.');
+    return data;
+  }
+
+  function renderAssets() {
+    $('assetNav').innerHTML = assets.map((a) =>
+      '<button data-asset="' + esc(a.id) + '" class="asset-btn px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition ' +
+      (a.id === selectedId ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700') +
+      '">' + esc(a.icon + ' ' + a.name) + '</button>'
+    ).join('');
+  }
+
+  function renderAssetDetail() {
+    const asset = assets.find((a) => a.id === selectedId);
+    if (!asset) return;
+    $('assetTitle').textContent = asset.name;
+    $('assetPrice').textContent = 'R$ ' + money(asset.price) + ' / ' + asset.unit;
+    renderAssets();
+  }
+
+  function renderBalance() {
+    $('balance').textContent = money(user.balance) + ' ZP';
+  }
+
+  async function loadHistory() {
+    const tbody = $('history');
+    try {
+      const rows = await api('/api/history');
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-slate-500">Nenhuma operação ainda.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map((r) => {
+        const gain = r.net >= 0;
+        const date = new Date(r.createdAt.replace(' ', 'T') + 'Z').toLocaleString('pt-BR');
+        return '<tr class="border-b border-slate-800/70">' +
+          '<td class="py-2 pr-3 whitespace-nowrap text-slate-400">' + esc(date) + '</td>' +
+          '<td class="py-2 pr-3">' + esc(r.commodity) + '</td>' +
+          '<td class="py-2 pr-3">' + (r.side === 'up' ? 'Alta' : 'Baixa') + '</td>' +
+          '<td class="py-2 pr-3">' + money(r.stake) + ' ZP</td>' +
+          '<td class="py-2 pr-3 font-bold ' + (gain ? 'text-emerald-400' : 'text-rose-400') + '">' + (gain ? '+' : '') + money(r.net) + ' ZP</td>' +
+          '</tr>';
+      }).join('');
+    } catch (err) {
+      tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-rose-400">' + esc(err.message) + '</td></tr>';
+    }
+  }
+
+  function showResult(trade) {
+    const won = trade.outcome === 'win';
+    const box = $('result');
+    box.className = (won ? 'bg-emerald-950/30 border-emerald-500/50' : 'bg-rose-950/30 border-rose-500/50') +
+      ' border p-5 rounded-2xl shadow-2xl space-y-3';
+    box.innerHTML =
+      '<div class="flex justify-between items-center">' +
+        '<span class="text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider ' +
+          (won ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400') + '">' +
+          (won ? 'Lucro obtido' : 'Prejuízo registado') + '</span>' +
+        '<span class="text-xs text-slate-400">' + esc(trade.commodity) + ' • ' + (trade.side === 'up' ? 'Alta' : 'Baixa') + '</span>' +
+      '</div>' +
+      '<div class="text-center py-2">' +
+        '<p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Resultado</p>' +
+        '<h3 class="text-3xl font-black ' + (won ? 'text-emerald-400' : 'text-rose-400') + '">' +
+          (won ? '+' : '') + money(trade.net) + ' ZP</h3>' +
+        '<p class="text-xs mt-1 text-slate-400">Entrada R$ ' + money(trade.entryPrice) + ' → saída R$ ' + money(trade.exitPrice) + '</p>' +
+      '</div>';
+    box.classList.remove('hidden');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function trade(side) {
+    const stake = Math.round(Number($('stake').value));
+    if (!Number.isFinite(stake) || stake < 1) { alert('Informe um valor válido (mínimo 1 ZP).'); return; }
+    if (stake > user.balance) { alert('Saldo insuficiente. Reponha os créditos de demonstração.'); return; }
+
+    document.querySelectorAll('.trade-btn').forEach((b) => (b.disabled = true));
+    try {
+      const data = await api('/api/trade', { method: 'POST', body: JSON.stringify({ commodity: selectedId, side, stake }) });
+      user.balance = data.balance;
+      renderBalance();
+      showResult(data.trade);
+      loadHistory();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      document.querySelectorAll('.trade-btn').forEach((b) => (b.disabled = false));
+    }
+  }
+
+  document.addEventListener('click', (event) => {
+    const assetBtn = event.target.closest('[data-asset]');
+    if (assetBtn) { selectedId = assetBtn.dataset.asset; renderAssetDetail(); return; }
+    const tradeBtn = event.target.closest('[data-side]');
+    if (tradeBtn) trade(tradeBtn.dataset.side);
+  });
+
+  $('refresh').addEventListener('click', loadHistory);
+  $('logoutBtn').addEventListener('click', async () => {
+    try { await api('/api/logout', { method: 'POST' }); } catch { /* ignore */ }
+    location.replace('/');
+  });
+  $('addCredits').addEventListener('click', async () => {
+    try {
+      const data = await api('/api/settings', { method: 'POST', body: JSON.stringify({ startingBalance: 1000 }) });
+      user.balance = data.balance;
+      renderBalance();
+    } catch (err) { alert(err.message); }
+  });
+
+  (async () => {
+    try {
+      const me = await api('/api/me');
+      user = me.user;
+      $('welcome').textContent = 'Bem-vindo, ' + user.username;
+      renderBalance();
+      if (user.isAdmin) $('adminLink').classList.remove('hidden');
+
+      assets = await api('/api/commodities');
+      if (!assets.length) throw new Error('Nenhum ativo disponível.');
+      selectedId = assets[0].id;
+      renderAssetDetail();
+      loadHistory();
+
+      $('guard').classList.add('hidden');
+      $('screen').classList.remove('hidden');
+    } catch (err) {
+      if (!/Sessão/.test(err.message)) {
+        $('guard').innerHTML = '<p class="text-rose-400 text-sm">' + esc(err.message) + '</p>';
+      }
+    }
+  })();
+})();
+</script>
+</body>
+</html>

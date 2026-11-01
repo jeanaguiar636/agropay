@@ -1,3 +1,22 @@
 name = "agropay"
-main = "_worker.js"
+main = "src/index.js"
 compatibility_date = "2026-03-01"
+
+# Static front-end (index.html, app.html, admin.html ...)
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# D1 database binding used by the API.
+# Create the real database with:
+#   npx wrangler d1 create agropay-db
+# then paste the generated database_id below (required for `wrangler deploy`).
+[[d1_databases]]
+binding = "DB"
+database_name = "agropay-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[vars]
+# Comma-separated list of e-mails that get admin access.
+ADMIN_EMAILS = "jeanaguiar636@gmail.com"
