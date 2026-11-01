@@ -1,123 +1,111 @@
+```html
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroTrade Pro - Painel do Trader</title>
+    <title>AgroTrade Pro - Terminal de Operações</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0f172a] text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-[#090d16] text-slate-100 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
 
-    <!-- SECÇÃO DE LOGIN -->
-    <div id="login-screen" class="fixed inset-0 bg-[#0f172a] z-50 flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-[#1e293b] border border-slate-800 p-6 rounded-2xl shadow-2xl space-y-6">
-            <div class="text-center space-y-1">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</h1>
-                <p class="text-xs text-slate-400">Entre com a sua conta ligada à nuvem D1</p>
-            </div>
-
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">E-mail</label>
-                    <input type="email" id="login-email" required placeholder="ex: afiliado9591@gmail.com" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-                </div>
-
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Palavra-passe</label>
-                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-                </div>
-
-                <div id="login-error" class="text-xs text-rose-400 text-center hidden"></div>
-
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
-                    Entrar no Painel
-                </button>
-            </form>
+    <!-- Top Navigation Terminal Header -->
+    <header class="bg-[#0f172a] border-b border-slate-800/80 px-4 py-3 flex justify-between items-center sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span class="text-lg font-black tracking-wider bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">AGROTRADE // PRO</span>
         </div>
+        <div class="flex items-center gap-3">
+            <span id="user-tag" class="text-xs text-slate-400 hidden sm:inline-block font-mono">system@user</span>
+            <button onclick="logout()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition">Terminar Sessão</button>
+        </div>
+    </header>
+
+    <!-- System Status Bar -->
+    <div class="bg-[#0b1323] border-b border-slate-800/50 px-4 py-2 text-[11px] font-mono text-slate-400 flex justify-between items-center overflow-x-auto whitespace-nowrap">
+        <span class="flex items-center gap-2"><span class="text-emerald-400">● STATUS:</span> NUVEM D1 CONECTADA</span>
+        <span class="flex items-center gap-2"><span class="text-amber-400">⚡ LATÊNCIA:</span> 18ms</span>
+        <span class="flex items-center gap-2"><span class="text-cyan-400">🛡️ SEGURANÇA:</span> SSL ATIVO</span>
     </div>
 
-    <!-- PAINEL PROFISSIONAL DO TRADER -->
-    <div id="dashboard-screen" class="hidden flex-1 flex flex-col">
-        <!-- Top Navigation -->
-        <header class="bg-[#1e293b] border-b border-slate-800 px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow-md">
-            <div class="flex items-center gap-2">
-                <span class="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">AgroTrade Pro</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <button onclick="logout()" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900/40 border border-rose-500/30 px-3 py-1.5 rounded-xl text-sm font-semibold transition">Sair</button>
-            </div>
-        </header>
-
-        <!-- Commodities Horizontal Menu -->
-        <nav class="bg-[#162032] border-b border-slate-800 px-4 py-3 overflow-x-auto flex gap-3 no-scrollbar">
-            <button onclick="selectCommodity('Café', 450, 12.5)" class="commodity-btn bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap shadow-lg transition">Café</button>
-            <button onclick="selectCommodity('Trigo', 320, 8.2)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Trigo</button>
-            <button onclick="selectCommodity('Feijão', 210, 15.4)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Feijão</button>
-            <button onclick="selectCommodity('Arroz', 540, 8.1)" class="commodity-btn bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap border border-slate-700 transition">Arroz</button>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="max-w-4xl mx-auto w-full p-4 flex-1 space-y-4 pb-12">
-            <!-- Saldo Card -->
-            <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl shadow-xl flex justify-between items-center">
-                <div>
-                    <p class="text-xs text-slate-400 uppercase tracking-wider font-medium">Saldo Disponível (Nuvem D1)</p>
-                    <h2 id="user-balance" class="text-2xl font-black text-emerald-400 mt-1">100 ZPay ($ZP)</h2>
-                    <p id="user-welcome" class="text-xs text-slate-400 mt-0.5">Carregando...</p>
-                </div>
+    <!-- Main Content Grid -->
+    <main class="max-w-5xl mx-auto w-full p-4 flex-1 space-y-4 my-2">
+        
+        <!-- Saldo & Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 text-emerald-500/10 text-4xl font-black">$$</div>
+                <p class="text-xs text-slate-400 uppercase tracking-widest font-mono">Saldo Disponível</p>
+                <h2 id="user-balance" class="text-3xl font-black text-emerald-400 mt-1 font-mono">100.00 ZP</h2>
+                <p id="user-welcome" class="text-xs text-slate-500 mt-1 truncate">Sessão ativa</p>
             </div>
 
-            <!-- Ativo Selecionado & Operação -->
-            <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">Ativo em Tempo Real</span>
-                    <span id="selected-title" class="text-xl font-bold text-white">Saca de Café</span>
-                </div>
-                <div class="flex justify-between items-center bg-[#0f172a] p-3 rounded-xl border border-slate-800">
-                    <span class="text-xs text-slate-400">Cotação Atual:</span>
-                    <span id="live-price" class="text-lg font-bold text-amber-400">450.00 $ZP</span>
-                </div>
-
-                <!-- Input de Valor da Operação -->
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Valor da Operação ($ZP)</label>
-                    <input type="number" id="trade-amount" value="50" min="1" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
-                </div>
-
-                <!-- Botões de Ação -->
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="executeTrade('COMPRAR')" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
-                        COMPRAR (Alta)
-                    </button>
-                    <button onclick="executeTrade('VENDER')" class="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-rose-900/30 transition flex items-center justify-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
-                        VENDER (Baixa)
-                    </button>
-                </div>
+            <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl shadow-xl">
+                <p class="text-xs text-slate-400 uppercase tracking-widest font-mono">Mercado Ativo</p>
+                <h2 id="selected-title" class="text-2xl font-bold text-white mt-1">Saca de Café</h2>
+                <p class="text-xs text-emerald-400 mt-1 flex items-center gap-1">🟢 Alta Liquidez</p>
             </div>
 
-            <!-- RESULTADO DA OPERAÇÃO EM TEMPO REAL -->
-            <div id="result-card" class="hidden bg-[#1e293b] border p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300">
-                <div class="flex justify-between items-center">
-                    <span id="result-type-badge" class="text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider"></span>
-                    <span class="text-xs text-slate-400">Ativo: <strong id="result-commodity" class="text-white"></strong></span>
-                </div>
-                <div class="text-center py-3">
-                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Resultado da Operação</p>
-                    <h3 id="result-value" class="text-3xl font-black">0.00 $ZP</h3>
-                    <p id="result-status-text" class="text-xs font-medium mt-1"></p>
-                </div>
-                <div class="flex gap-2 pt-2">
-                    <button onclick="closeResult()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition border border-slate-700">
-                        Fechar & Nova Operação
-                    </button>
+            <div class="bg-[#111827] border border-slate-800/80 p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+                <p class="text-xs text-slate-400 uppercase tracking-widest font-mono">Cotação Atual (Spot)</p>
+                <div class="flex justify-between items-baseline mt-1">
+                    <span id="live-price" class="text-2xl font-black text-amber-400 font-mono">450.00 $ZP</span>
+                    <span class="text-xs text-emerald-400 font-mono">+2.4% hoje</span>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
 
-    <!-- Script Completo -->
+        <!-- Commodities Menu Tabs -->
+        <div class="bg-[#111827] border border-slate-800/80 p-2 rounded-2xl flex gap-2 overflow-x-auto">
+            <button onclick="selectCommodity('Café', 450)" class="commodity-btn flex-1 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition whitespace-nowrap shadow-lg">Café Arábica</button>
+            <button onclick="selectCommodity('Trigo', 320)" class="commodity-btn flex-1 bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition whitespace-nowrap border border-slate-800">Trigo Premium</button>
+            <button onclick="selectCommodity('Feijão', 210)" class="commodity-btn flex-1 bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition whitespace-nowrap border border-slate-800">Feijão Carioca</button>
+            <button onclick="selectCommodity('Arroz', 540)" class="commodity-btn flex-1 bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition whitespace-nowrap border border-slate-800">Arroz Branco</button>
+        </div>
+
+        <!-- Trading Control Panel -->
+        <div class="bg-[#111827] border border-slate-800/80 p-6 rounded-2xl space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <span class="text-xs text-slate-400 font-mono uppercase">Painel de Execução de Ordens</span>
+                <span class="text-xs text-emerald-400 font-mono">Modo: Instantâneo</span>
+            </div>
+
+            <div>
+                <label class="block text-xs text-slate-400 mb-1.5 font-mono">Montante do Investimento ($ZP)</label>
+                <input type="number" id="trade-amount" value="50" min="1" class="w-full bg-[#090d16] border border-slate-700/80 rounded-xl px-4 py-3 text-white text-sm font-mono focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <button onclick="executeTrade('COMPRAR')" class="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                    COMPRAR (ALTA)
+                </button>
+                <button onclick="executeTrade('VENDER')" class="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-rose-950 transition flex items-center justify-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                    VENDER (BAIXA)
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic Result Card -->
+        <div id="result-card" class="hidden bg-[#111827] border p-6 rounded-2xl shadow-2xl space-y-4 transition-all duration-300">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <span id="result-type-badge" class="text-xs font-bold px-3 py-1 rounded-lg uppercase tracking-widest font-mono"></span>
+                <span class="text-xs text-slate-400 font-mono">Ativo: <strong id="result-commodity" class="text-white"></strong></span>
+            </div>
+            <div class="text-center py-4">
+                <p class="text-xs text-slate-400 uppercase tracking-widest font-mono mb-2">Balanço da Operação</p>
+                <h3 id="result-value" class="text-4xl font-black font-mono">0.00 $ZP</h3>
+                <p id="result-status-text" class="text-xs font-medium mt-2 font-mono"></p>
+            </div>
+            <button onclick="closeResult()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl text-xs uppercase tracking-wider transition border border-slate-700">
+                Fechar & Nova Operação
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Core Logic Script -->
     <script>
         let currentUser = null;
         let currentCommodity = "Café";
@@ -128,61 +116,33 @@
             if (savedUser) {
                 try {
                     currentUser = JSON.parse(savedUser);
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('dashboard-screen').classList.remove('hidden');
-                    document.getElementById('user-welcome').innerText = "Bem-vindo, " + currentUser.username + " (" + currentUser.email + ")";
-                    document.getElementById('user-balance').innerText = (currentUser.balance !== undefined ? currentUser.balance : 100) + " ZPay ($ZP)";
+                    document.getElementById('user-welcome').innerText = currentUser.username + " (" + currentUser.email + ")";
+                    document.getElementById('user-tag').innerText = currentUser.email;
+                    document.getElementById('user-balance').innerText = (currentUser.balance !== undefined ? currentUser.balance : 100).toFixed(2) + " ZP";
                 } catch(e) {
                     localStorage.removeItem('agro_user');
+                    window.location.href = 'index.html';
                 }
+            } else {
+                window.location.href = 'index.html';
             }
         }
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-pass').value.trim();
-            const errorDiv = document.getElementById('login-error');
-            errorDiv.classList.add('hidden');
-
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    localStorage.setItem('agro_user', JSON.stringify(data.user));
-                    checkLoginState();
-                } else {
-                    errorDiv.innerText = data.error || 'E-mail ou palavra-passe incorretos.';
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch (err) {
-                errorDiv.innerText = 'Erro de ligação ao servidor.';
-                errorDiv.classList.remove('hidden');
-            }
-        });
 
         function logout() {
             localStorage.removeItem('agro_user');
-            location.reload();
+            window.location.href = 'index.html';
         }
 
-        function selectCommodity(name, price, trend) {
+        function selectCommodity(name, price) {
             currentCommodity = name;
             currentPrice = price;
             document.getElementById('selected-title').innerText = "Saca de " + name;
             document.getElementById('live-price').innerText = price.toFixed(2) + " $ZP";
             
             document.querySelectorAll('.commodity-btn').forEach(btn => {
-                btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-lg');
-                btn.classList.add('bg-slate-800', 'text-slate-300', 'border', 'border-slate-700');
-                if(btn.innerText.includes(name)) {
-                    btn.classList.add('bg-emerald-600', 'text-white', 'shadow-lg');
-                    btn.classList.remove('bg-slate-800', 'text-slate-300', 'border', 'border-slate-700');
+                btn.className = "commodity-btn flex-1 bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition whitespace-nowrap border border-slate-800";
+                if(btn.innerText.includes(name.toUpperCase())) {
+                    btn.className = "commodity-btn flex-1 bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition whitespace-nowrap shadow-lg";
                 }
             });
         }
@@ -192,12 +152,12 @@
             const investVal = parseFloat(amountInput.value) || 0;
 
             if (investVal <= 0) {
-                alert("Introduza um valor válido para operar.");
+                alert("Introduza um valor válido superior a 0.");
                 return;
             }
 
-            const isWin = Math.random() > 0.4;
-            const percentage = isWin ? (Math.random() * 70 + 15) : -(Math.random() * 60 + 10);
+            const isWin = Math.random() > 0.42;
+            const percentage = isWin ? (Math.random() * 65 + 10) : -(Math.random() * 55 + 10);
             const resultValue = (investVal * (percentage / 100));
 
             const resultCard = document.getElementById('result-card');
@@ -209,27 +169,27 @@
             commEl.innerText = currentCommodity + " (" + type + ")";
 
             if (isWin) {
-                resultCard.className = "bg-emerald-950/30 border border-emerald-500/50 p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300";
-                badge.className = "text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider bg-emerald-500/20 text-emerald-400";
-                badge.innerText = "Lucro Obtido";
-                valEl.className = "text-3xl font-black text-emerald-400";
+                resultCard.className = "bg-emerald-950/20 border border-emerald-500/40 p-6 rounded-2xl shadow-2xl space-y-4 transition-all duration-300";
+                badge.className = "text-xs font-bold px-3 py-1 rounded-lg uppercase tracking-widest font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                badge.innerText = "LUCRO REGISTADO [+]";
+                valEl.className = "text-4xl font-black font-mono text-emerald-400";
                 valEl.innerText = "+" + resultValue.toFixed(2) + " $ZP (+" + percentage.toFixed(1) + "%)";
-                statusText.className = "text-xs font-medium mt-1 text-emerald-300";
-                statusText.innerText = "Parabéns! A sua previsão em " + type + " foi certeira.";
+                statusText.className = "text-xs font-medium mt-2 font-mono text-emerald-300";
+                statusText.innerText = "Ordem bem-sucedida. O mercado valorizou a favor da sua projeção.";
             } else {
-                resultCard.className = "bg-rose-950/30 border border-rose-500/50 p-5 rounded-2xl shadow-2xl space-y-3 transition-all duration-300";
-                badge.className = "text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider bg-rose-500/20 text-rose-400";
-                badge.innerText = "Prejuízo Registado";
-                valEl.className = "text-3xl font-black text-rose-400";
+                resultCard.className = "bg-rose-950/20 border border-rose-500/40 p-6 rounded-2xl shadow-2xl space-y-4 transition-all duration-300";
+                badge.className = "text-xs font-bold px-3 py-1 rounded-lg uppercase tracking-widest font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                badge.innerText = "PREJUÍZO REGISTADO [-]";
+                valEl.className = "text-4xl font-black font-mono text-rose-400";
                 valEl.innerText = resultValue.toFixed(2) + " $ZP (" + percentage.toFixed(1) + "%)";
-                statusText.className = "text-xs font-medium mt-1 text-rose-300";
-                statusText.innerText = "Mercado oscilou contra a sua posição. Tente novamente!";
+                statusText.className = "text-xs font-medium mt-2 font-mono text-rose-300";
+                statusText.innerText = "Correção de mercado desfavorável à posição selecionada.";
             }
 
             if (currentUser) {
-                currentUser.balance = Math.round((currentUser.balance || 100) + resultValue);
+                currentUser.balance = Math.max(0, (currentUser.balance || 100) + resultValue);
                 localStorage.setItem('agro_user', JSON.stringify(currentUser));
-                document.getElementById('user-balance').innerText = currentUser.balance + ' ZPay ($ZP)';
+                document.getElementById('user-balance').innerText = currentUser.balance.toFixed(2) + ' ZP';
             }
 
             resultCard.classList.remove('hidden');
